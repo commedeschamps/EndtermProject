@@ -23,18 +23,19 @@ public class Main {
         while (true) {
             System.out.println("\n -Electronics Store Management-");
             System.out.println("1. View All Products");
-            System.out.println("2. Add New Product");
-            System.out.println("3. Update Product");
-            System.out.println("4. Delete Product");
-            System.out.println("5. Register User");
-            System.out.println("6. Login User");
-            System.out.println("7. Exit");
-            System.out.println("8. Create Order");
-            System.out.println("9. Search Products");
-            System.out.println("10. View Cart");
-            System.out.println("11. Add to Cart");
-            System.out.println("12. Remove from Cart");
-            System.out.println("13. Checkout");
+            System.out.println("2. Choose Product Category");
+            System.out.println("3. Add New Product");
+            System.out.println("4. Update Product");
+            System.out.println("5. Delete Product");
+            System.out.println("6. Register User");
+            System.out.println("7. Login User");
+            System.out.println("8. Exit");
+            System.out.println("9. Create Order");
+            System.out.println("10. Search Products");
+            System.out.println("11. View Cart");
+            System.out.println("12. Add to Cart");
+            System.out.println("13. Remove from Cart");
+            System.out.println("14. Checkout");
             System.out.print("Enter your choice: ");
 
             if (!scanner.hasNextInt()) {
@@ -52,6 +53,25 @@ public class Main {
                     break;
 
                 case 2:
+                    List<String> categories = userRepository.getProductCategories();
+                    if (categories.isEmpty()) {
+                        System.out.println("No categories found.");
+                    } else {
+                        System.out.println("Please choose a category of electronic products:");
+                        for (int i = 0; i < categories.size(); i++) {
+                            System.out.println((i + 1) + ". " + categories.get(i));
+                        }
+
+                        int categoryChoice = scanner.nextInt();
+                        if (categoryChoice > 0 && categoryChoice <= categories.size()) {
+                            System.out.println("You have chosen: " + categories.get(categoryChoice - 1));
+                        } else {
+                            System.out.println("Invalid choice. Please try again.");
+                        }
+                    }
+                    break;
+
+                case 3:
                     System.out.print("Enter product name: ");
                     String productName = scanner.nextLine();
 
@@ -72,7 +92,7 @@ public class Main {
                     break;
 
 
-                case 3:
+                case 4:
                     System.out.print("Enter product ID to update: ");
                     int updateId = scanner.nextInt();
                     scanner.nextLine();
@@ -95,13 +115,13 @@ public class Main {
                     productController.updateProduct(updateId, newName, newDescription, newCategory, newPrice, newQuantity);
                     break;
 
-                case 4:
+                case 5:
                     System.out.print("Enter product ID to delete: ");
                     int deleteId = scanner.nextInt();
                     productController.deleteProduct(deleteId);
                     break;
 
-                case 5:
+                case 6:
                     System.out.println("- User Registration -");
                     System.out.print("Enter your name: ");
                     String userName = scanner.nextLine();
@@ -117,7 +137,7 @@ public class Main {
                     System.out.println("User registered successfully!");
                     break;
 
-                case 6:
+                case 7:
                     System.out.println("- User Login -");
                     System.out.print("Enter your email: ");
                     String loginEmail = scanner.nextLine();
@@ -133,11 +153,11 @@ public class Main {
                     }
                     break;
 
-                case 7:
+                case 8:
                     System.out.println("Exiting the program...");
                     return;
 
-                case 8:
+                case 9:
                     System.out.println("- Create Order -");
                     System.out.print("Enter your user ID: ");
                     int userId = scanner.nextInt();
@@ -172,14 +192,14 @@ public class Main {
                         System.out.println("Failed to create order.");
                     }
                     break;
-                case 9:
+                case 10:
                     System.out.println("- Search Products -");
                     System.out.print("Enter product name to search: ");
                     String searchName = scanner.nextLine();
 
                     productController.searchAndDisplayProducts(searchName);
                     break;
-                case 10:
+                case 11:
                     System.out.println("- Your Cart -");
                     List<OrderItem> cartItems = cart.getItems();
                     if (cartItems.isEmpty()) {
@@ -195,7 +215,7 @@ public class Main {
                     }
                     break;
 
-                case 11:
+                case 12:
                     System.out.print("Enter product ID to add to cart: ");
                     int addProductId = scanner.nextInt();
                     System.out.print("Enter quantity: ");
@@ -207,14 +227,14 @@ public class Main {
                     System.out.println("Product added to cart.");
                     break;
 
-                case 12:
+                case 13:
                     System.out.print("Enter product ID to remove from cart: ");
                     int removeProductId = scanner.nextInt();
                     cart.removeItem(removeProductId);
                     System.out.println("Product removed from cart.");
                     break;
 
-                case 13:
+                case 14:
                     if (cart.getItems().isEmpty()) {
                         System.out.println("Your cart is empty. Add items before checking out.");
                         break;
