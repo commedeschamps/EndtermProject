@@ -1,6 +1,8 @@
 package model;
+import model.OrderItem;
 
 import java.util.List;
+
 
 public class Order {
     private int id;

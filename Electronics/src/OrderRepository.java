@@ -1,6 +1,8 @@
-package Order;
+package model;
 
 import model.Order;
+import model.OrderItem;
+
 
 import java.sql.*;
 import java.util.List;
@@ -9,7 +11,7 @@ public class OrderRepository {
 
     public int createOrder(Order order) {
         String orderQuery = "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, ?) RETURNING id";
-        try (Connection connection = DatabaseConnection.getConnection();
+        try (Connection connection = util.DatabaseConnection.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(orderQuery)) {
 
             pstmt.setInt(1, order.getUserId());
@@ -28,7 +30,7 @@ public class OrderRepository {
 
     public void addOrderItems(int orderId, List<OrderItem> items) {
         String itemQuery = "INSERT INTO order_items (order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
-        try (Connection connection = DatabaseConnection.getConnection();
+        try (Connection connection = util.DatabaseConnection.getConnection();
              PreparedStatement pstmt = connection.prepareStatement(itemQuery)) {
 
             for (OrderItem item : items) {

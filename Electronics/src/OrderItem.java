@@ -1,4 +1,6 @@
-package Order;
+package model;
+import model.OrderItem;
+
 
 public class OrderItem {
     private int id;

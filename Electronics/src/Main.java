@@ -6,8 +6,8 @@ import User.UserRepository;
 import java.util.Optional;
 import java.util.Scanner;
 import model.Order;
-import Order.OrderItem;
-import Order.OrderRepository;
+import model.OrderItem;
+import model.OrderRepository;
 import model.Cart;
 
 
