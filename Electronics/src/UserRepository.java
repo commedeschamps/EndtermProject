@@ -4,6 +4,8 @@ import model.User;
 import util.DatabaseConnection;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 public class UserRepository {
@@ -48,5 +50,21 @@ public class UserRepository {
             e.printStackTrace();
         }
         return Optional.empty();
+    }
+
+    public List<String> getProductCategories() {
+        List<String> categories = new ArrayList<>();
+        String query = "SELECT DISTINCT category FROM products";
+        try (Connection connection = DatabaseConnection.getConnection();
+             Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                categories.add(rs.getString("category"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return categories;
     }
 }
