@@ -102,5 +102,14 @@ public class ProductRepository {
         }
 
     }
+    public List<Product> getProductsByCategory(String category) {
+        List<Product> productsByCategory = new ArrayList<>();
+        for (Product product : products) {
+            if (product.getCategory().equalsIgnoreCase(category)) {
+                productsByCategory.add(product);
+            }
+        }
+        return productsByCategory;
+    }
 
 }
