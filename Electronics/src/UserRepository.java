@@ -67,4 +67,30 @@ public class UserRepository {
         }
         return categories;
     }
+
+    public List<model.Product> getProductsByCategory(String category) {
+        List<model.Product> products = new ArrayList<>();
+        String query = "SELECT * FROM products WHERE category = ?";
+        try (Connection connection = DatabaseConnection.getConnection();
+             PreparedStatement pstmt = connection.prepareStatement(query)) {
+
+            pstmt.setString(1, category);
+            ResultSet rs = pstmt.executeQuery();
+
+            while (rs.next()) {
+                model.Product product = new model.Product(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getString("category"),
+                        rs.getDouble("price"),
+                        rs.getInt("quantity")
+                );
+                products.add(product);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return products;
+    }
 }
