@@ -64,7 +64,22 @@ public class Main {
 
                         int categoryChoice = scanner.nextInt();
                         if (categoryChoice > 0 && categoryChoice <= categories.size()) {
-                            System.out.println("You have chosen: " + categories.get(categoryChoice - 1));
+                            String chosenCategory = categories.get(categoryChoice - 1);
+                            System.out.println("You have chosen: " + chosenCategory);
+
+                            List<model.Product> products = userRepository.getProductsByCategory(chosenCategory);
+                            if (products.isEmpty()) {
+                                System.out.println("No products found in this category.");
+                            } else {
+                                System.out.println("Products in category " + chosenCategory + ":");
+                                for (model.Product product : products) {
+                                    System.out.println("ID: " + product.getId() +
+                                            ", Name: " + product.getName() +
+                                            ", Description: " + product.getDescription() +
+                                            ", Price: " + product.getPrice() +
+                                            ", Quantity: " + product.getQuantity());
+                                }
+                            }
                         } else {
                             System.out.println("Invalid choice. Please try again.");
                         }
