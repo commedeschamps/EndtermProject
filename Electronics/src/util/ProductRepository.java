@@ -95,6 +95,15 @@ public class ProductRepository {
             e.printStackTrace();
         }
     }
+    public List<Product> getProductsByCategory(String category) {
+        List<Product> productsByCategory = new ArrayList<>();
+        for (Product product : products) {
+            if (product.getCategory().equalsIgnoreCase(category)) {
+                productsByCategory.add(product);
+            }
+        }
+        return productsByCategory;
+    }
 
     public void addProduct(Product product) {
         String query = "INSERT INTO products (name, description, category, price, quantity) VALUES (?, ?, ?, ?, ?)";

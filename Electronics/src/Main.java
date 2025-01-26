@@ -5,6 +5,7 @@ import model.User;
 import User.UserRepository;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.Locale;
 import model.Order;
 import model.OrderItem;
 import model.OrderRepository;
@@ -18,6 +19,7 @@ public class Main {
         ProductController productController = new ProductController();
         UserRepository userRepository = new UserRepository();
         Scanner scanner = new Scanner(System.in);
+        scanner.useLocale(Locale.US);
         OrderRepository orderRepository = new OrderRepository();
         Cart cart = new Cart();
 
@@ -37,6 +39,7 @@ public class Main {
             System.out.println("11. Add to Cart");
             System.out.println("12. Remove from Cart");
             System.out.println("13. Checkout");
+            System.out.println("14. View Products by Category");
             System.out.print("Enter your choice: ");
 
             if (!scanner.hasNextInt()) {
@@ -261,6 +264,12 @@ public class Main {
                     } else {
                         System.out.println("Failed to place the order. Please try again.");
                     }
+                    break;
+
+                case 14:
+                    System.out.print("Enter product category: ");
+                    String selectedCategory = scanner.nextLine();
+                    productController.displayProductsByCategory(selectedCategory);
                     break;
 
 

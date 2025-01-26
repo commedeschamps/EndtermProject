@@ -49,6 +49,16 @@ public class ProductController {
             }
         }
     }
+    public void displayProductsByCategory(String category) {
+        List<Product> products = productRepository.getProductsByCategory(category);
+        if (products.isEmpty()) {
+            System.out.println("No products found in this category.");
+        } else {
+            for (Product product : products) {
+                System.out.println(product);
+            }
+        }
+    }
 
     public Product getProductById(int productId) {
         return productRepository.getProductById(productId);
