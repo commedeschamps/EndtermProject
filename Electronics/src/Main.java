@@ -9,6 +9,8 @@ import model.Order;
 import model.OrderItem;
 import model.OrderRepository;
 import model.Cart;
+import model.Product;
+
 
 
 public class Main {
@@ -154,12 +156,21 @@ public class Main {
                         System.out.print("Enter quantity: ");
                         int orderQuantity = scanner.nextInt();
 
-                        System.out.print("Enter price per unit: ");
-                        double unitPrice = scanner.nextDouble();
+                        Product product = productController.getProductById(productId);
+                        if (product == null) {
+                            System.out.println("Product not found. Please enter a valid product ID.");
+                            continue;
+                        }
 
+                        double unitPrice = product.getPrice();
                         totalPrice += unitPrice * orderQuantity;
+
                         orderItems.add(new OrderItem(0, productId, orderQuantity, unitPrice));
+                        System.out.println("Added " + product.getName() + " (Price: $" + unitPrice + ", Quantity: " + orderQuantity + ")");
                     }
+
+                    System.out.println("Total Price for the Order: $" + totalPrice);
+
 
                     String orderDate = java.time.LocalDate.now().toString();
                     Order newOrder = new Order(0, userId, orderDate, totalPrice, "Pending", orderItems);
@@ -172,6 +183,7 @@ public class Main {
                         System.out.println("Failed to create order.");
                     }
                     break;
+
                 case 9:
                     System.out.println("- Search Products -");
                     System.out.print("Enter product name to search: ");
