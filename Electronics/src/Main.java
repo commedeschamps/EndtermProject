@@ -5,6 +5,7 @@ import model.User;
 import User.UserRepository;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.Locale;
 import model.Order;
 import model.OrderItem;
 import model.OrderRepository;
@@ -16,6 +17,7 @@ public class Main {
         ProductController productController = new ProductController();
         UserRepository userRepository = new UserRepository();
         Scanner scanner = new Scanner(System.in);
+        scanner.useLocale(Locale.US);
         OrderRepository orderRepository = new OrderRepository();
         Cart cart = new Cart();
 
