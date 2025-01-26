@@ -52,7 +52,7 @@ public class ProductRepository {
                         rs.getString("description"),
                         rs.getString("category"),
                         rs.getDouble("price"),
-                        rs.getInt("quantity") // Убедитесь, что столбец quantity существует в вашей таблице
+                        rs.getInt("quantity")
                 );
                 products.add(product);
             }
@@ -82,7 +82,18 @@ public class ProductRepository {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null; // Если продукт не найден
+        return null;
+    }
+
+    public void updateProductQuantity(int productId, int newQuantity) {
+        String query = "UPDATE products SET quantity = ? WHERE id = ?";
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setInt(1, newQuantity);
+            pstmt.setInt(2, productId);
+            pstmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void addProduct(Product product) {

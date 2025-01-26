@@ -38,7 +38,7 @@ public class ProductController {
     }
 
     public void searchAndDisplayProducts(String name) {
-        List<Product> products = productRepository.searchProductsByName(name); // Вызываем метод репозитория
+        List<Product> products = productRepository.searchProductsByName(name);
         if (products.isEmpty()) {
             System.out.println("No products found with the given name.");
         } else {
@@ -49,7 +49,13 @@ public class ProductController {
             }
         }
     }
+
     public Product getProductById(int productId) {
         return productRepository.getProductById(productId);
+    }
+
+    public void updateProductQuantity(int productId, int newQuantity) {
+        productRepository.updateProductQuantity(productId, newQuantity);
+        System.out.println("Product quantity updated successfully for Product ID: " + productId);
     }
 }

@@ -161,6 +161,10 @@ public class Main {
                             System.out.println("Product not found. Please enter a valid product ID.");
                             continue;
                         }
+                        if (orderQuantity > product.getQuantity()) {
+                            System.out.println("Sorry, only " + product.getQuantity() + " units of " + product.getName() + " are available.");
+                            continue;
+                        }
 
                         double unitPrice = product.getPrice();
                         totalPrice += unitPrice * orderQuantity;
@@ -178,6 +182,15 @@ public class Main {
                     int orderId = orderRepository.createOrder(newOrder);
                     if (orderId > 0) {
                         orderRepository.addOrderItems(orderId, orderItems);
+
+                        for (OrderItem item : orderItems) {
+                            Product product = productController.getProductById(item.getProductId());
+                            int remainingQuantity = product.getQuantity() - item.getQuantity();
+                            productController.updateProductQuantity(item.getProductId(), remainingQuantity);
+
+                            System.out.println("Remaining " + product.getName() + ": " + remainingQuantity + " units.");
+                        }
+
                         System.out.println("Order created successfully with ID: " + orderId);
                     } else {
                         System.out.println("Failed to create order.");
