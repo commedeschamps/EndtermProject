@@ -1,52 +1,57 @@
-package User;
+package model;
 
-import model.User;
-import util.DatabaseConnection;
+public class User {
+    private int id;
+    private String name;
+    private String email;
+    private String password;
+    private String role;
 
-import java.sql.*;
-import java.util.Optional;
-//Example of commit
-public class UserRepository {
-
-    public void registerUser(User user) {
-        String query = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(query)) {
-
-            pstmt.setString(1, user.getName());
-            pstmt.setString(2, user.getEmail());
-            pstmt.setString(3, user.getPassword());
-            pstmt.setString(4, user.getRole());
-            pstmt.executeUpdate();
-
-            System.out.println("User registered successfully!");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+    public User(int id, String name, String email, String password, String role) {
+        this.id = id;
+        this.name = name;
+        this.email = email;
+        this.password = password;
+        this.role = role;
     }
 
-    public Optional<User> loginUser(String email, String password) {
-        String query = "SELECT * FROM users WHERE email = ? AND password = ?";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(query)) {
+    public int getId() {
+        return id;
+    }
 
-            pstmt.setString(1, email);
-            pstmt.setString(2, password);
+    public void setId(int id) {
+        this.id = id;
+    }
 
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                User user = new User(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("email"),
-                        rs.getString("password"),
-                        rs.getString("role")
-                );
-                return Optional.of(user);
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return Optional.empty();
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getRole() {
+        return role;
+    }
+
+    public void setRole(String role) {
+        this.role = role;
     }
 }
