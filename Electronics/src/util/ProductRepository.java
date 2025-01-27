@@ -63,7 +63,6 @@ public class ProductRepository {
         return products;
     }
 
-    // Добавляем метод getProductById
     public Product getProductById(int productId) {
         String query = "SELECT * FROM products WHERE id = ?";
         try (PreparedStatement pstmt = connection.prepareStatement(query)) {
@@ -95,8 +94,12 @@ public class ProductRepository {
             e.printStackTrace();
         }
     }
+
     public List<Product> getProductsByCategory(String category) {
         List<Product> productsByCategory = new ArrayList<>();
+
+        List<Product> products = getAllProducts();
+
         for (Product product : products) {
             if (product.getCategory().equalsIgnoreCase(category)) {
                 productsByCategory.add(product);
@@ -138,8 +141,7 @@ public class ProductRepository {
 
     public void deleteProduct(int productId) {
         String query = "DELETE FROM products WHERE id=?";
-        try (Connection connection = DatabaseConnection.getConnection();
-             PreparedStatement pstmt = connection.prepareStatement(query)) {
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
             pstmt.setInt(1, productId);
             pstmt.executeUpdate();
         } catch (SQLException e) {
