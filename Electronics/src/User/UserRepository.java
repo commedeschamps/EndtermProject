@@ -5,7 +5,7 @@ import util.DatabaseConnection;
 
 import java.sql.*;
 import java.util.Optional;
-
+//Example of commit
 public class UserRepository {
 
     public void registerUser(User user) {
