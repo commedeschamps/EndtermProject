@@ -97,15 +97,44 @@ public class ProductRepository {
 
     public List<Product> getProductsByCategory(String category) {
         List<Product> productsByCategory = new ArrayList<>();
+        String query = "SELECT * FROM products WHERE LOWER(category) = LOWER(?)";
 
-        List<Product> products = getAllProducts();
+        try (PreparedStatement pstmt = connection.prepareStatement(query)) {
+            pstmt.setString(1, category);
+            ResultSet rs = pstmt.executeQuery();
 
-        for (Product product : products) {
-            if (product.getCategory().equalsIgnoreCase(category)) {
+            while (rs.next()) {
+                Product product = new Product(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getString("category"),
+                        rs.getDouble("price"),
+                        rs.getInt("quantity")
+                );
                 productsByCategory.add(product);
             }
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
         return productsByCategory;
+    }
+
+    public List<String> getAllCategories() {
+        List<String> categories = new ArrayList<>();
+        String query = "SELECT DISTINCT category FROM products";
+
+        try (Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+
+            while (rs.next()) {
+                categories.add(rs.getString("category"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return categories;
     }
 
     public void addProduct(Product product) {
