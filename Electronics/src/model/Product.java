@@ -16,6 +16,7 @@ public class Product {
         this.price = price;
         this.quantity = quantity;
     }
+
     public int getId() {
         return id;
     }
@@ -52,14 +53,16 @@ public class Product {
     public void setQuantity(int quantity) {
         this.quantity = quantity;
     }
-    
+
     @Override
     public String toString() {
-        return "Product ID: " + id +
-                ", Name: " + name +
-                ", Category: " + category +
-                ", Price: $" + price +
-                ", Quantity: " + quantity +
-                ", Description: " + description;
+        return "Product{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", category='" + category + '\'' +
+                ", price=" + price +
+                ", quantity=" + quantity +
+                '}';
     }
 }
