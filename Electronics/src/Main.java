@@ -29,7 +29,9 @@ public class Main {
                 case 11 -> addToCart();
                 case 12 -> removeFromCart();
                 case 13 -> checkout();
-                case 14 -> displayProductsByCategory(); // Updated method call
+                case 14 -> displayProductsByCategory();
+                case 15 -> sortProductsByPriceAscending();
+                case 16 -> sortProductsByPriceDescending();
                 default -> System.out.println("Invalid choice. Please try again.");
             }
         }
@@ -57,7 +59,18 @@ public class Main {
         System.out.println("12. Remove from Cart");
         System.out.println("13. Checkout");
         System.out.println("14. View Products by Category");
+        System.out.println("15. Sort Products by Price (Ascending)");
+        System.out.println("16. Sort Products by Price (Descending)");
     }
+
+    private static void sortProductsByPriceAscending() {
+        productController.sortProductsByPriceAscending();
+    }
+
+    private static void sortProductsByPriceDescending() {
+        productController.sortProductsByPriceDescending();
+    }
+
 
     private static int getUserIntInput(String prompt) {
         System.out.print(prompt);
@@ -207,6 +220,9 @@ public class Main {
     }
 
     private static void addToCart() {
+        // Show all products first
+        productController.displayAllProducts();
+
         int productId = getUserIntInput("Enter product ID to add to cart: ");
         int quantity = getUserIntInput("Enter quantity: ");
         Product product = productController.getProductById(productId);
@@ -227,10 +243,25 @@ public class Main {
     }
 
     private static void removeFromCart() {
+        // Show all items in the cart first
+        if (cart.getItems().isEmpty()) {
+            System.out.println("Your cart is empty.");
+            return;
+        }
+
+        System.out.println("Items in your cart:");
+        cart.getItems().forEach(item -> {
+            Product product = productController.getProductById(item.getProductId());
+            System.out.println("Product ID: " + item.getProductId() + ", Name: " + product.getName() +
+                    ", Quantity: " + item.getQuantity() + ", Price: $" + item.getPrice() + ", Total: $" +
+                    (item.getPrice() * item.getQuantity()));
+        });
+
         int productId = getUserIntInput("Enter product ID to remove from cart: ");
         cart.removeItem(productId);
         System.out.println("Item removed from cart.");
     }
+
 
     private static void checkout() {
         if (loggedInUser == null) {
