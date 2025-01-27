@@ -1,22 +1,11 @@
 package controller;
 
-import java.util.List;
+import java.util.*;
 import model.Product;
 import util.ProductRepository;
 
 public class ProductController {
     private final ProductRepository productRepository = new ProductRepository();
-
-    public void displayAllProducts() {
-        List<Product> products = productRepository.getAllProducts();
-        if (products.isEmpty()) {
-            System.out.println("No products available.");
-        } else {
-            for (Product product : products) {
-                System.out.println(product);
-            }
-        }
-    }
 
     public void addProduct(String name, String description, String category, double price, int quantity) {
         Product product = new Product(0, name, description, category, price, quantity);
@@ -55,7 +44,7 @@ public class ProductController {
         } else {
             System.out.println("Available categories:");
             for (String category : categories) {
-                System.out.println(" - " + " " + category);
+                System.out.println(" - " + category);
             }
         }
     }
@@ -74,5 +63,40 @@ public class ProductController {
 
     public void updateProductQuantity(int productId, int remainingQuantity) {
         productRepository.updateProductQuantity(productId, remainingQuantity);
+    }
+
+    // Display all products
+    public void displayAllProducts() {
+        List<Product> products = productRepository.getAllProducts();
+        if (products.isEmpty()) {
+            System.out.println("No products available.");
+        } else {
+            products.forEach(product -> {
+                System.out.println("Product ID: " + product.getId() + ", Name: " + product.getName() +
+                        ", Price: $" + product.getPrice());
+            });
+        }
+    }
+
+    // Sort products by price in ascending order
+    public void sortProductsByPriceAscending() {
+        List<Product> products = productRepository.getAllProducts();
+        products.sort(Comparator.comparingDouble(Product::getPrice));
+        System.out.println("Products sorted by price (ascending):");
+        products.forEach(product -> {
+            System.out.println("Product ID: " + product.getId() + ", Name: " + product.getName() +
+                    ", Price: $" + product.getPrice());
+        });
+    }
+
+    // Sort products by price in descending order
+    public void sortProductsByPriceDescending() {
+        List<Product> products = productRepository.getAllProducts();
+        products.sort((p1, p2) -> Double.compare(p2.getPrice(), p1.getPrice()));
+        System.out.println("Products sorted by price (descending):");
+        products.forEach(product -> {
+            System.out.println("Product ID: " + product.getId() + ", Name: " + product.getName() +
+                    ", Price: $" + product.getPrice());
+        });
     }
 }
