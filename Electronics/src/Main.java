@@ -1,286 +1,277 @@
-import java.util.List;
-import java.util.ArrayList;
+import java.util.*;
 import controller.ProductController;
-import model.User;
+import model.*;
 import User.UserRepository;
-import java.util.Optional;
-import java.util.Scanner;
-import java.util.Locale;
-import model.Order;
-import model.OrderItem;
-import model.OrderRepository;
-import model.Cart;
-import model.Product;
-
-
 
 public class Main {
+    private static final Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
+    private static final ProductController productController = new ProductController();
+    private static final UserRepository userRepository = new UserRepository();
+    private static final Cart cart = new Cart();
+    private static User loggedInUser = null;
+
     public static void main(String[] args) {
-        ProductController productController = new ProductController();
-        UserRepository userRepository = new UserRepository();
-        Scanner scanner = new Scanner(System.in);
-        scanner.useLocale(Locale.US);
-        OrderRepository orderRepository = new OrderRepository();
-        Cart cart = new Cart();
-
-
         while (true) {
-            System.out.println("\n -Electronics Store Management-");
-            System.out.println("1. View All Products");
-            System.out.println("2. Add New Product");
-            System.out.println("3. Update Product");
-            System.out.println("4. Delete Product");
-            System.out.println("5. Register User");
-            System.out.println("6. Login User");
-            System.out.println("7. Exit");
-            System.out.println("8. Create Order");
-            System.out.println("9. Search Products");
-            System.out.println("10. View Cart");
-            System.out.println("11. Add to Cart");
-            System.out.println("12. Remove from Cart");
-            System.out.println("13. Checkout");
-            System.out.println("14. View Products by Category");
-            System.out.print("Enter your choice: ");
-
-            if (!scanner.hasNextInt()) {
-                System.out.println("Invalid input. Please enter a number.");
-                scanner.next();
-                continue;
-            }
-
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            showMenu();
+            int choice = getUserIntInput("Enter your choice: ");
 
             switch (choice) {
-                case 1:
-                    productController.displayAllProducts();
-                    break;
-
-                case 2:
-                    System.out.print("Enter product name: ");
-                    String productName = scanner.nextLine();
-
-                    System.out.print("Enter product description: ");
-                    String description = scanner.nextLine();
-
-                    System.out.print("Enter product category: ");
-                    String category = scanner.nextLine();
-
-                    System.out.print("Enter product price: ");
-                    double price = scanner.nextDouble();
-
-                    System.out.print("Enter product quantity: ");
-                    int quantity = scanner.nextInt();
-
-                    productController.addProduct(productName, description, category, price, quantity);
-                    System.out.println("Product added successfully!");
-                    break;
-
-
-                case 3:
-                    System.out.print("Enter product ID to update: ");
-                    int updateId = scanner.nextInt();
-                    scanner.nextLine();
-
-                    System.out.print("Enter new product name: ");
-                    String newName = scanner.nextLine();
-
-                    System.out.print("Enter new product description: ");
-                    String newDescription = scanner.nextLine();
-
-                    System.out.print("Enter new product category: ");
-                    String newCategory = scanner.nextLine();
-
-                    System.out.print("Enter new product price: ");
-                    double newPrice = scanner.nextDouble();
-
-                    System.out.print("Enter new product quantity: ");
-                    int newQuantity = scanner.nextInt();
-
-                    productController.updateProduct(updateId, newName, newDescription, newCategory, newPrice, newQuantity);
-                    break;
-
-                case 4:
-                    System.out.print("Enter product ID to delete: ");
-                    int deleteId = scanner.nextInt();
-                    productController.deleteProduct(deleteId);
-                    break;
-
-                case 5:
-                    System.out.println("- User Registration -");
-                    System.out.print("Enter your name: ");
-                    String userName = scanner.nextLine();
-
-                    System.out.print("Enter your email: ");
-                    String email = scanner.nextLine();
-
-                    System.out.print("Enter your password: ");
-                    String password = scanner.nextLine();
-
-                    User newUser = new User(0, userName, email, password, "customer");
-                    userRepository.registerUser(newUser);
-                    System.out.println("User registered successfully!");
-                    break;
-
-                case 6:
-                    System.out.println("- User Login -");
-                    System.out.print("Enter your email: ");
-                    String loginEmail = scanner.nextLine();
-
-                    System.out.print("Enter your password: ");
-                    String loginPassword = scanner.nextLine();
-
-                    Optional<User> loggedInUser = userRepository.loginUser(loginEmail, loginPassword);
-                    if (loggedInUser.isPresent()) {
-                        System.out.println("Welcome, " + loggedInUser.get().getName() + "!");
-                    } else {
-                        System.out.println("Invalid email or password.");
-                    }
-                    break;
-
-                case 7:
-                    System.out.println("Exiting the program...");
-                    return;
-
-                case 8:
-                    System.out.println("- Create Order -");
-                    System.out.print("Enter your user ID: ");
-                    int userId = scanner.nextInt();
-                    scanner.nextLine();
-
-                    List<OrderItem> orderItems = new ArrayList<>();
-                    double totalPrice = 0.0;
-
-                    while (true) {
-                        System.out.print("Enter product ID to add to the order (or 0 to finish): ");
-                        int productId = scanner.nextInt();
-                        if (productId == 0) break;
-
-                        System.out.print("Enter quantity: ");
-                        int orderQuantity = scanner.nextInt();
-
-                        Product product = productController.getProductById(productId);
-                        if (product == null) {
-                            System.out.println("Product not found. Please enter a valid product ID.");
-                            continue;
-                        }
-                        if (orderQuantity > product.getQuantity()) {
-                            System.out.println("Sorry, only " + product.getQuantity() + " units of " + product.getName() + " are available.");
-                            continue;
-                        }
-
-                        double unitPrice = product.getPrice();
-                        totalPrice += unitPrice * orderQuantity;
-
-                        orderItems.add(new OrderItem(0, productId, orderQuantity, unitPrice));
-                        System.out.println("Added " + product.getName() + " (Price: $" + unitPrice + ", Quantity: " + orderQuantity + ")");
-                    }
-
-                    System.out.println("Total Price for the Order: $" + totalPrice);
-
-
-                    String orderDate = java.time.LocalDate.now().toString();
-                    Order newOrder = new Order(0, userId, orderDate, totalPrice, "Pending", orderItems);
-
-                    int orderId = orderRepository.createOrder(newOrder);
-                    if (orderId > 0) {
-                        orderRepository.addOrderItems(orderId, orderItems);
-
-                        for (OrderItem item : orderItems) {
-                            Product product = productController.getProductById(item.getProductId());
-                            int remainingQuantity = product.getQuantity() - item.getQuantity();
-                            productController.updateProductQuantity(item.getProductId(), remainingQuantity);
-
-                            System.out.println("Remaining " + product.getName() + ": " + remainingQuantity + " units.");
-                        }
-
-                        System.out.println("Order created successfully with ID: " + orderId);
-                    } else {
-                        System.out.println("Failed to create order.");
-                    }
-                    break;
-
-                case 9:
-                    System.out.println("- Search Products -");
-                    System.out.print("Enter product name to search: ");
-                    String searchName = scanner.nextLine();
-
-                    productController.searchAndDisplayProducts(searchName);
-                    break;
-                case 10:
-                    System.out.println("- Your Cart -");
-                    List<OrderItem> cartItems = cart.getItems();
-                    if (cartItems.isEmpty()) {
-                        System.out.println("Your cart is empty.");
-                    } else {
-                        for (OrderItem item : cartItems) {
-                            System.out.println("Product ID: " + item.getProductId() +
-                                    ", Quantity: " + item.getQuantity() +
-                                    ", Price per unit: " + item.getPrice() +
-                                    ", Total: " + (item.getPrice() * item.getQuantity()));
-                        }
-                        System.out.println("Total Price: $" + cart.calculateTotalPrice());
-                    }
-                    break;
-
-                case 11:
-                    System.out.print("Enter product ID to add to cart: ");
-                    int addProductId = scanner.nextInt();
-                    System.out.print("Enter quantity: ");
-                    int addQuantity = scanner.nextInt();
-                    System.out.print("Enter price per unit: ");
-                    double addPrice = scanner.nextDouble();
-
-                    cart.addItem(new OrderItem(0, addProductId, addQuantity, addPrice));
-                    System.out.println("Product added to cart.");
-                    break;
-
-                case 12:
-                    System.out.print("Enter product ID to remove from cart: ");
-                    int removeProductId = scanner.nextInt();
-                    cart.removeItem(removeProductId);
-                    System.out.println("Product removed from cart.");
-                    break;
-
-                case 13:
-                    if (cart.getItems().isEmpty()) {
-                        System.out.println("Your cart is empty. Add items before checking out.");
-                        break;
-                    }
-
-                    System.out.print("Enter your user ID to place the order: ");
-                    int checkoutUserId = scanner.nextInt();
-
-                    double totalOrderPrice = cart.calculateTotalPrice();
-                    String checkoutDate = java.time.LocalDate.now().toString();
-
-                    Order checkoutOrder = new Order(0, checkoutUserId, checkoutDate, totalOrderPrice, "Pending", cart.getItems());
-
-                    int createdOrderId = orderRepository.createOrder(checkoutOrder);
-                    if (createdOrderId > 0) {
-                        orderRepository.addOrderItems(createdOrderId, cart.getItems());
-                        System.out.println("Order placed successfully! Order ID: " + createdOrderId);
-                        cart.clearCart();
-                    } else {
-                        System.out.println("Failed to place the order. Please try again.");
-                    }
-                    break;
-
-
-                case 14:
-                    productController.displayAllCategories();
-                    System.out.print("Enter product category: ");
-                    String selectedCategory = scanner.nextLine();
-                    productController.displayProductsByCategory(selectedCategory);
-                    break;
-
-
-                default:
-                    System.out.println("Invalid choice.");
-
-
-
+                case 1 -> productController.displayAllProducts();
+                case 2 -> addProduct();
+                case 3 -> updateProduct();
+                case 4 -> deleteProduct();
+                case 5 -> registerUser();
+                case 6 -> loginUser();
+                case 7 -> exitProgram();
+                case 8 -> createOrder();
+                case 9 -> searchProducts();
+                case 10 -> viewCart();
+                case 11 -> addToCart();
+                case 12 -> removeFromCart();
+                case 13 -> checkout();
+                case 14 -> displayProductsByCategory(); // Updated method call
+                default -> System.out.println("Invalid choice. Please try again.");
             }
         }
     }
+
+    private static void exitProgram() {
+        System.out.println("Exiting the program...");
+        scanner.close();
+        System.exit(0);
+    }
+
+    private static void showMenu() {
+        System.out.println("\n-Electronics Store Management-");
+        System.out.println("1. View All Products");
+        System.out.println("2. Add New Product");
+        System.out.println("3. Update Product");
+        System.out.println("4. Delete Product");
+        System.out.println("5. Register User");
+        System.out.println("6. Login User");
+        System.out.println("7. Exit");
+        System.out.println("8. Create Order");
+        System.out.println("9. Search Products");
+        System.out.println("10. View Cart");
+        System.out.println("11. Add to Cart");
+        System.out.println("12. Remove from Cart");
+        System.out.println("13. Checkout");
+        System.out.println("14. View Products by Category");
+    }
+
+    private static int getUserIntInput(String prompt) {
+        System.out.print(prompt);
+        while (!scanner.hasNextInt()) {
+            System.out.println("Invalid input. Please enter a number.");
+            scanner.next();
+            System.out.print(prompt);
+        }
+        int input = scanner.nextInt();
+        scanner.nextLine();
+        return input;
+    }
+
+    private static String getUserStringInput(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine();
+    }
+
+    private static double getUserDoubleInput(String prompt) {
+        System.out.print(prompt);
+        while (!scanner.hasNextDouble()) {
+            System.out.println("Invalid input. Please enter a valid number.");
+            scanner.next();
+            System.out.print(prompt);
+        }
+        double input = scanner.nextDouble();
+        scanner.nextLine();
+        return input;
+    }
+
+    private static void addProduct() {
+        String name = getUserStringInput("Enter product name: ");
+        String description = getUserStringInput("Enter product description: ");
+        String category = getUserStringInput("Enter product category: ");
+        double price = getUserDoubleInput("Enter product price: ");
+        int quantity = getUserIntInput("Enter product quantity: ");
+
+        productController.addProduct(name, description, category, price, quantity);
+        System.out.println("Product added successfully!");
+    }
+
+    private static void updateProduct() {
+        int id = getUserIntInput("Enter product ID to update: ");
+        String name = getUserStringInput("Enter new product name: ");
+        String description = getUserStringInput("Enter new product description: ");
+        String category = getUserStringInput("Enter new product category: ");
+        double price = getUserDoubleInput("Enter new product price: ");
+        int quantity = getUserIntInput("Enter new product quantity: ");
+
+        productController.updateProduct(id, name, description, category, price, quantity);
+        System.out.println("Product updated successfully!");
+    }
+
+    private static void deleteProduct() {
+        int id = getUserIntInput("Enter product ID to delete: ");
+        productController.deleteProduct(id);
+        System.out.println("Product deleted successfully!");
+    }
+
+    private static void registerUser() {
+        String name = getUserStringInput("Enter your name: ");
+        String email = getUserStringInput("Enter your email: ");
+
+        if (!email.contains("@") || !email.contains(".")) {
+            System.out.println("Invalid email format. Please try again.");
+            return;
+        }
+
+        if (userRepository.getUserByEmail(email).isPresent()) {
+            System.out.println("An account with this email already exists. Please log in.");
+            return;
+        }
+
+        String password = getUserStringInput("Enter your password: ");
+        double initialBalance = getUserDoubleInput("Enter your initial balance: ");
+
+        User newUser = new User(0, name, email, password, "customer", initialBalance);
+        userRepository.registerUser(newUser);
+        System.out.println("User registered successfully!");
+    }
+
+
+    private static void loginUser() {
+        String email = getUserStringInput("Enter your email: ");
+        String password = getUserStringInput("Enter your password: ");
+
+        Optional<User> user = userRepository.loginUser(email, password);
+        if (user.isPresent()) {
+            loggedInUser = user.get();
+            System.out.println("Welcome, " + loggedInUser.getName() + "!");
+        } else {
+            System.out.println("Invalid email or password.");
+        }
+    }
+
+
+    private static void createOrder() {
+        if (loggedInUser == null) {
+            System.out.println("Please log in first.");
+            return;
+        }
+
+        List<OrderItem> orderItems = new ArrayList<>();
+        double totalPrice = 0;
+
+        while (true) {
+            int productId = getUserIntInput("Enter product ID to add to the order (or 0 to finish): ");
+            if (productId == 0) break;
+
+            int quantity = getUserIntInput("Enter quantity: ");
+            Product product = productController.getProductById(productId);
+
+            if (product == null) {
+                System.out.println("Invalid product ID. Try again.");
+                continue;
+            }
+            if (quantity > product.getQuantity()) {
+                System.out.println("Not enough stock for product: " + product.getName() +
+                        ". Available quantity: " + product.getQuantity());
+                continue;
+            }
+
+            double unitPrice = product.getPrice();
+            totalPrice += unitPrice * quantity;
+            orderItems.add(new OrderItem(0, productId, quantity, unitPrice));
+        }
+
+        Order newOrder = new Order(0, loggedInUser.getId(), java.time.LocalDate.now().toString(), totalPrice, "Pending", orderItems);
+        System.out.println("Order created successfully!");
+    }
+
+    private static void searchProducts() {
+        String searchName = getUserStringInput("Enter the product name to search: ");
+        productController.searchAndDisplayProducts(searchName);
+    }
+
+    private static void viewCart() {
+        if (cart.getItems().isEmpty()) {
+            System.out.println("Your cart is empty.");
+        } else {
+            cart.getItems().forEach(item -> {
+                System.out.println("Product ID: " + item.getProductId() + ", Quantity: " + item.getQuantity() +
+                        ", Price: $" + item.getPrice() + ", Total: $" + (item.getPrice() * item.getQuantity()));
+            });
+            System.out.println("Total price: $" + cart.calculateTotalPrice());
+        }
+    }
+
+    private static void addToCart() {
+        int productId = getUserIntInput("Enter product ID to add to cart: ");
+        int quantity = getUserIntInput("Enter quantity: ");
+        Product product = productController.getProductById(productId);
+
+        if (product == null) {
+            System.out.println("Invalid product ID.");
+            return;
+        }
+
+        if (quantity > product.getQuantity()) {
+            System.out.println("Not enough stock for product: " + product.getName() +
+                    ". Available quantity: " + product.getQuantity());
+            return;
+        }
+
+        cart.addItem(new OrderItem(0, productId, quantity, product.getPrice()));
+        System.out.println("Item added to cart: " + product.getName());
+    }
+
+    private static void removeFromCart() {
+        int productId = getUserIntInput("Enter product ID to remove from cart: ");
+        cart.removeItem(productId);
+        System.out.println("Item removed from cart.");
+    }
+
+    private static void checkout() {
+        if (loggedInUser == null) {
+            System.out.println("Please log in first.");
+            return;
+        }
+
+        if (cart.getItems().isEmpty()) {
+            System.out.println("Your cart is empty. Add items before checking out.");
+            return;
+        }
+
+        double totalPrice = cart.calculateTotalPrice();
+
+        if (loggedInUser.getBalance() < totalPrice) {
+            System.out.println("Insufficient balance. Total cost: $" + totalPrice +
+                    ". Your balance: $" + loggedInUser.getBalance());
+            return;
+        }
+
+        loggedInUser.setBalance(loggedInUser.getBalance() - totalPrice);
+
+        for (OrderItem item : cart.getItems()) {
+            Product product = productController.getProductById(item.getProductId());
+            int remainingQuantity = product.getQuantity() - item.getQuantity();
+            productController.updateProductQuantity(item.getProductId(), remainingQuantity);
+        }
+
+        cart.clearCart();
+
+        System.out.println("Checkout successful! Total cost: $" + totalPrice);
+        System.out.println("Your remaining balance: $" + loggedInUser.getBalance());
+    }
+
+    private static void displayProductsByCategory() {
+        System.out.println("\nDisplaying all categories:");
+        productController.displayAllCategories();
+
+        String category = getUserStringInput("Enter the product category to display: ");
+        productController.displayProductsByCategory(category);
+    }
+
 }
+

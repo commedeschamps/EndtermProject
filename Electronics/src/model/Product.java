@@ -54,15 +54,17 @@ public class Product {
         this.quantity = quantity;
     }
 
+
+
     @Override
     public String toString() {
         return
                 "id=" + id +
-                ", name='" + name + '\'' +
-                ", description='" + description + '\'' +
-                ", category='" + category + '\'' +
-                ", price=" + price +
-                ", quantity=" + quantity
+                        ", name='" + name + '\'' +
+                        ", description='" + description + '\'' +
+                        ", category='" + category + '\'' +
+                        ", price=" + price +
+                        ", quantity=" + quantity
                 ;
     }
 }
