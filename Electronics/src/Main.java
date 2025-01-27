@@ -266,7 +266,9 @@ public class Main {
                     }
                     break;
 
+
                 case 14:
+                    productController.displayAllCategories();
                     System.out.print("Enter product category: ");
                     String selectedCategory = scanner.nextLine();
                     productController.displayProductsByCategory(selectedCategory);
