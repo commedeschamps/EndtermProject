@@ -2,24 +2,30 @@ package model;
 
 import java.util.List;
 
-
 public class Order {
     private int id;
     private int userId;
+    private String date;
     private double totalPrice;
-    private String orderDate;
     private String status;
-    private List<OrderItem> orderItems;
+    private List<OrderItem> items;  // List of items in the order
 
-    public Order(int id, int userId, String orderDate, double totalPrice, String status, List<OrderItem> orderItems) {
+    // Constructor to initialize the Order
+    public Order(int id, int userId, String date, double totalPrice, String status, List<OrderItem> items) {
         this.id = id;
         this.userId = userId;
-        this.orderDate = orderDate;
+        this.date = date;
         this.totalPrice = totalPrice;
         this.status = status;
-        this.orderItems = orderItems;
+        this.items = items;  // Set the list of order items
     }
 
+    // Getter for the list of items
+    public List<OrderItem> getItems() {
+        return items;
+    }
+
+    // Getter and setter methods for other fields
     public int getId() {
         return id;
     }
@@ -36,20 +42,20 @@ public class Order {
         this.userId = userId;
     }
 
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
     public double getTotalPrice() {
         return totalPrice;
     }
 
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
-    }
-
-    public String getOrderDate() {
-        return orderDate;
-    }
-
-    public void setOrderDate(String orderDate) {
-        this.orderDate = orderDate;
     }
 
     public String getStatus() {
@@ -60,11 +66,7 @@ public class Order {
         this.status = status;
     }
 
-    public List<OrderItem> getOrderItems() {
-        return orderItems;
-    }
-
-    public void setOrderItems(List<OrderItem> orderItems) {
-        this.orderItems = orderItems;
+    public void setItems(List<OrderItem> items) {
+        this.items = items;
     }
 }
