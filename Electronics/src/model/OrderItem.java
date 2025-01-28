@@ -1,12 +1,12 @@
 package model;
 
-
 public class OrderItem {
     private int id;
     private int productId;
     private int quantity;
     private double price;
 
+    // Constructor for OrderItem
     public OrderItem(int id, int productId, int quantity, double price) {
         this.id = id;
         this.productId = productId;
@@ -14,6 +14,7 @@ public class OrderItem {
         this.price = price;
     }
 
+    // Getter and setter methods
     public int getId() {
         return id;
     }
@@ -46,4 +47,3 @@ public class OrderItem {
         this.price = price;
     }
 }
-
