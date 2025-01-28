@@ -67,7 +67,7 @@ public class User {
 
     public boolean deductBalance(double amount) {
         if (amount > balance) {
-            return false; // insufficient balance
+            return false;
         }
         balance -= amount;
         return true;
