@@ -3,7 +3,6 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class Cart {
     private List<OrderItem> items;
 
@@ -29,5 +28,9 @@ public class Cart {
 
     public double calculateTotalPrice() {
         return items.stream().mapToDouble(item -> item.getPrice() * item.getQuantity()).sum();
+    }
+
+    public boolean isEmpty() {
+        return items.isEmpty();
     }
 }

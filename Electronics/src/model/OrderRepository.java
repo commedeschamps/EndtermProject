@@ -5,11 +5,9 @@ import java.util.List;
 
 public class OrderRepository {
 
-    // Create an order and store it in the database, returning the generated order ID
     public int createOrder(Order order) {
         String orderQuery = "INSERT INTO orders (user_id, total_price, status) VALUES (?, ?, ?) RETURNING id";
 
-        // Calculate the total price of the order based on the items
         double totalPrice = calculateTotalPrice(order.getItems());
 
         try (Connection connection = util.DatabaseConnection.getConnection();

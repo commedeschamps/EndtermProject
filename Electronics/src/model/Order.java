@@ -5,27 +5,26 @@ import java.util.List;
 public class Order {
     private int id;
     private int userId;
-    private String date;
     private double totalPrice;
+    private String orderDate;
     private String status;
-    private List<OrderItem> items;  // List of items in the order
+    private String paymentMethod; 
+    private List<OrderItem> orderItems;
+    private String deliveryMethod;
 
-    // Constructor to initialize the Order
-    public Order(int id, int userId, String date, double totalPrice, String status, List<OrderItem> items) {
+    public Order(int id, int userId, String orderDate, double totalPrice, String status, String paymentMethod, List<OrderItem> orderItems) {
         this.id = id;
         this.userId = userId;
-        this.date = date;
+        this.orderDate = orderDate;
         this.totalPrice = totalPrice;
         this.status = status;
-        this.items = items;  // Set the list of order items
+        this.paymentMethod = paymentMethod; // Присвоение поля
+        this.orderItems = orderItems;
     }
 
-    // Getter for the list of items
-    public List<OrderItem> getItems() {
-        return items;
+    public Order(int id, int id1, String string, double totalPrice, String pending, List<OrderItem> orderItems) {
     }
 
-    // Getter and setter methods for other fields
     public int getId() {
         return id;
     }
@@ -42,20 +41,20 @@ public class Order {
         this.userId = userId;
     }
 
-    public String getDate() {
-        return date;
-    }
-
-    public void setDate(String date) {
-        this.date = date;
-    }
-
     public double getTotalPrice() {
         return totalPrice;
     }
 
     public void setTotalPrice(double totalPrice) {
         this.totalPrice = totalPrice;
+    }
+
+    public String getOrderDate() {
+        return orderDate;
+    }
+
+    public void setOrderDate(String orderDate) {
+        this.orderDate = orderDate;
     }
 
     public String getStatus() {
@@ -66,7 +65,30 @@ public class Order {
         this.status = status;
     }
 
-    public void setItems(List<OrderItem> items) {
-        this.items = items;
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    public List<OrderItem> getItems() {
+        return orderItems;
+    }
+    public String getDeliveryMethod() {
+        return deliveryMethod;
+    }
+
+    public void setDeliveryMethod(String deliveryMethod) {
+        this.deliveryMethod = deliveryMethod;
     }
 }
