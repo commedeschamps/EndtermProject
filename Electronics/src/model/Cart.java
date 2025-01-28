@@ -3,6 +3,7 @@ package model;
 import java.util.ArrayList;
 import java.util.List;
 
+
 public class Cart {
     private List<OrderItem> items;
 
@@ -31,6 +32,7 @@ public class Cart {
     }
 
     public boolean isEmpty() {
-        return items.isEmpty();
+        return items.isEmpty(); // Checks if the items list is empty
     }
+
 }
