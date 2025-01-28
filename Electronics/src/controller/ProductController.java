@@ -9,64 +9,32 @@ public class ProductController {
     private final ProductRepository productRepository = new ProductRepository();
     private final Cart cart = new Cart();
 
+    // Add a new product to the repository
     public void addProduct(String name, String description, String category, double price, int quantity) {
         Product product = new Product(0, name, description, category, price, quantity);
         productRepository.addProduct(product);
         System.out.println("Product added successfully!");
     }
 
+    // Update an existing product
     public void updateProduct(int id, String name, String description, String category, double price, int quantity) {
         Product product = new Product(id, name, description, category, price, quantity);
         productRepository.updateProduct(product);
         System.out.println("Product updated successfully!");
     }
 
+    // Delete a product from the repository
     public void deleteProduct(int id) {
         productRepository.deleteProduct(id);
         System.out.println("Product deleted successfully!");
     }
 
-    public void displayAllProducts() {
-        List<Product> products = productRepository.getAllProducts();
-        if (products.isEmpty()) {
-            System.out.println("No products available.");
-        } else {
-            System.out.println("Available products:");
-            products.forEach(product -> System.out.println(product));
-        }
+    // Get a product by its ID
+    public Product getProductById(int id) {
+        return productRepository.getProductById(id);
     }
 
-    public void searchAndDisplayProducts(String name) {
-        List<Product> products = productRepository.searchProductsByName(name);
-        if (products.isEmpty()) {
-            System.out.println("No products found with the name: " + name);
-        } else {
-            System.out.println("Found products:");
-            products.forEach(product -> System.out.println(product));
-        }
-    }
-
-    public void displayAllCategories() {
-        List<String> categories = productRepository.getAllCategories();
-        if (categories.isEmpty()) {
-            System.out.println("No categories available.");
-        } else {
-            System.out.println("Available categories:");
-            categories.forEach(category -> System.out.println(" - " + category));
-        }
-    }
-
-    // Display products by category
-    public void displayProductsByCategory(String category) {
-        List<Product> products = productRepository.getProductsByCategory(category);
-        if (products.isEmpty()) {
-            System.out.println("No products found in the category: " + category);
-        } else {
-            System.out.println("Products in the category \"" + category + "\":");
-            products.forEach(product -> System.out.println(product));
-        }
-    }
-
+    // Add product to the shopping cart
     public void addProductToCart(int productId, int quantity) {
         Product product = productRepository.getProductById(productId);
         if (product == null) {
@@ -80,15 +48,20 @@ public class ProductController {
         }
 
         cart.addItem(new OrderItem(0, productId, quantity, product.getPrice()));
-        productRepository.updateProductQuantity(productId, product.getQuantity() - quantity);
+
+        int newQuantity = product.getQuantity() - quantity;
+        productRepository.updateProductQuantity(productId, newQuantity);
+
         System.out.println("Product added to cart!");
     }
 
+    // Remove product from the shopping cart
     public void removeProductFromCart(int productId) {
         cart.removeItem(productId);
         System.out.println("Product removed from cart.");
     }
 
+    // Display all items in the cart
     public void displayCartItems() {
         List<OrderItem> items = cart.getItems();
         if (items.isEmpty()) {
@@ -105,6 +78,7 @@ public class ProductController {
         }
     }
 
+    // Create an order from the cart
     public void createOrder(int userId) {
         if (cart.isEmpty()) {
             System.out.println("Cart is empty. Cannot create order.");
@@ -144,6 +118,7 @@ public class ProductController {
         cart.clearCart();
     }
 
+    // Checkout the cart and update user balance
     public void checkout(int userId, double userBalance) {
         if (cart.isEmpty()) {
             System.out.println("Cart is empty. Cannot checkout.");
@@ -161,20 +136,39 @@ public class ProductController {
         System.out.println("Your new balance: $" + (userBalance - totalPrice));
         cart.clearCart();
     }
-
-    // Sort products by price (ascending)
-    public void sortProductsByPriceAscending() {
+    public void displayAllProducts() {
         List<Product> products = productRepository.getAllProducts();
-        products.sort(Comparator.comparingDouble(Product::getPrice));
-        System.out.println("Products sorted by price (ascending):");
-        products.forEach(product -> System.out.println(product));
+        if (products.isEmpty()) {
+            System.out.println("No products available.");
+        } else {
+            products.forEach(product -> {
+                System.out.println("Product ID: " + product.getId() + ", Name: " + product.getName() +
+                        ", Price: $" + product.getPrice() +
+                        ", Description: " + product.getDescription() +
+                        ", Category: " + product.getCategory() +
+                        ", Quantity: " + product.getQuantity());
+            });
+        }
     }
 
-    // Sort products by price (descending)
+    public void sortProductsByPriceAscending() {
+    }
+
     public void sortProductsByPriceDescending() {
-        List<Product> products = productRepository.getAllProducts();
-        products.sort((p1, p2) -> Double.compare(p2.getPrice(), p1.getPrice()));
-        System.out.println("Products sorted by price (descending):");
-        products.forEach(product -> System.out.println(product));
+    }
+
+    public void displayAllProductsBrief() {
+    }
+
+    public void searchAndDisplayProducts(String searchName) {
+    }
+
+    public void updateProductQuantity(int productId, int remainingQuantity) {
+    }
+
+    public void displayProductsByCategory(String category) {
+    }
+
+    public void displayAllCategories() {
     }
 }
