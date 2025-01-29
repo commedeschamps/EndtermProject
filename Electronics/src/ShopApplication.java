@@ -4,6 +4,8 @@ import java.util.InputMismatchException;
 import java.util.Locale;
 import java.util.Scanner;
 
+
+
 public class ShopApplication {
     private final IUserController userController;
     private final IProductController productController;
@@ -18,6 +20,7 @@ public class ShopApplication {
         this.orderController = orderController;
         this.cartController = cartController;
     }
+
 
     public void start() {
         while (true) {
@@ -36,6 +39,10 @@ public class ShopApplication {
                     case 8 -> removeFromCart();
                     case 9 -> checkout();
                     case 10 -> addProduct();
+                    case 11 -> filterByCategory();
+                    case 12 -> filterByPriceRange();
+                    case 13 -> sortProductsAscending();
+                    case 14 -> sortProductsDescending();
                     case 0 -> exitApplication();
                     default -> System.out.println("Invalid option. Please try again.");
                 }
@@ -61,8 +68,36 @@ public class ShopApplication {
         System.out.println("8. Remove from Cart");
         System.out.println("9. Checkout");
         System.out.println("10. Add New Product");
+        System.out.println("11. Filter Products by Category");
+        System.out.println("12. Filter Products by Price Range");
+        System.out.println("13. Sort Products by Price (Ascending)");
+        System.out.println("14. Sort Products by Price (Descending)");
         System.out.println("0. Exit");
         System.out.print("Select an option: ");
+    }
+
+    private void filterByCategory() {
+        System.out.print("Enter category: ");
+        String category = scanner.nextLine();
+        String response = productController.getProductsByCategory(category);
+        System.out.println(response);
+    }
+
+    private void filterByPriceRange() {
+        double minPrice = getDoubleInput("Enter minimum price: ");
+        double maxPrice = getDoubleInput("Enter maximum price: ");
+        String response = productController.getProductsByPriceRange(minPrice, maxPrice);
+        System.out.println(response);
+    }
+
+    private void sortProductsAscending() {
+        String response = productController.sortProductsByPriceAscending();
+        System.out.println(response);
+    }
+
+    private void sortProductsDescending() {
+        String response = productController.sortProductsByPriceDescending();
+        System.out.println(response);
     }
 
     private void viewAllProducts() {
@@ -121,12 +156,6 @@ public class ShopApplication {
         System.out.println("Checkout functionality is not implemented yet.");
     }
 
-    private void exitApplication() {
-        System.out.println("Exiting application...");
-        scanner.close();
-        System.exit(0);
-    }
-
     private int getIntInput(String prompt) {
         System.out.print(prompt);
         while (!scanner.hasNextInt()) {
@@ -166,4 +195,10 @@ public class ShopApplication {
         String response = productController.createProduct(name, description, price, quantity, category);
         System.out.println(response);
     }
+    private void exitApplication() {
+        System.out.println("Exiting application...");
+        scanner.close();
+        System.exit(0);
+    }
+
 }
