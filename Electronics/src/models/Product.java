@@ -16,7 +16,7 @@ public class Product {
         this.quantity = quantity;
         this.category = category;
     }
-    
+
     public Product(String name, String description, double price, int quantity, String category) {
         this.name = name;
         this.description = description;
@@ -52,4 +52,3 @@ public class Product {
         return "Product{id=" + id + ", name='" + name + "', description='" + description + "', price=" + price + ", quantity=" + quantity + ", category='" + category + "'}";
     }
 }
-
