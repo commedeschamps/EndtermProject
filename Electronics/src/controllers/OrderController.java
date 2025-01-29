@@ -3,6 +3,8 @@ package controllers;
 import controllers.interfaces.IOrderController;
 import models.Order;
 import repositories.interfaces.IOrderRepository;
+import java.util.stream.Collectors;
+
 
 import java.util.Date;
 import java.util.List;
@@ -28,12 +30,16 @@ public class OrderController implements IOrderController {
     }
 
     @Override
-    public String getAllOrders() {
-        List<Order> orders = repo.getAllOrders();
-        StringBuilder response = new StringBuilder();
-        for (Order order : orders) {
-            response.append(order.toString()).append("\n");
+    public String getAllProducts() {
+        List<Product> products = repo.getAllProducts();
+
+        if (products == null || products.isEmpty()) {
+            return "No products available.";
         }
-        return response.toString();
-    }
+
+        return products.stream()
+                .map(Product::toString)
+                .collect(Collectors.joining("\n")); 
+}
+
 }
