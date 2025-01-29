@@ -4,7 +4,7 @@ import controllers.interfaces.IOrderController;
 import models.Order;
 import repositories.interfaces.IOrderRepository;
 
-import java.util.Date; 
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,10 +16,10 @@ public class OrderController implements IOrderController {
     }
 
     @Override
-    public String createOrder(int userId, double totalAmount) {
-        Order order = new Order(userId, new Date(), totalAmount);
+    public String createOrder(int userId, double totalAmount, String deliveryMethod, String paymentMethod) {
+        Order order = new Order(userId, new Date(), totalAmount, deliveryMethod, paymentMethod);
         boolean created = repo.createOrder(order);
-        return (created) ? "Order was created" : "Order creation failed";
+        return (created) ? "Order was created successfully" : "Order creation failed";
     }
 
     @Override
