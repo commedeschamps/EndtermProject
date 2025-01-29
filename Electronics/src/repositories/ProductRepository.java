@@ -42,30 +42,30 @@ public class ProductRepository implements IProductRepository {
     }
 
     @Override
-public List<Product> getAllProducts() {
-    List<Product> products = new ArrayList<>();
-    String sql = "SELECT * FROM products";
+    public List<Product> getAllProducts() {
+        List<Product> products = new ArrayList<>();
+        String sql = "SELECT * FROM products";
 
-    try (Connection connection = db.getConnection();
-         Statement stmt = connection.createStatement();
-         ResultSet rs = stmt.executeQuery(sql)) {
+        try (Connection connection = db.getConnection();
+             Statement stmt = connection.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
 
-        while (rs.next()) {
-            Product product = new Product(
-                    rs.getInt("id"),
-                    rs.getString("name"),
-                    rs.getString("description"),
-                    rs.getDouble("price"),
-                    rs.getInt("quantity"),
-                    rs.getString("category")
-            );
-            products.add(product);
+            while (rs.next()) {
+                Product product = new Product(
+                        rs.getInt("id"),
+                        rs.getString("name"),
+                        rs.getString("description"),
+                        rs.getDouble("price"),
+                        rs.getInt("quantity"),
+                        rs.getString("category")
+                );
+                products.add(product);
+            }
+        } catch (SQLException e) {
+            System.out.println("SQL error: " + e.getMessage());
         }
-    } catch (SQLException e) {
-        System.out.println("SQL error: " + e.getMessage());
+        return products;
     }
-    return products;
-}
 
 
     @Override
