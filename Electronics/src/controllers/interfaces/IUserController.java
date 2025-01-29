@@ -1,8 +1,6 @@
 package controllers.interfaces;
 
 public interface IUserController {
-    String createUser(String name, String surname, String gender);
-    String getUserById(int id);
-    String getAllUsers();
+    String createUser(String email, String password, String name);
+    String loginUser(String email, String password);
 }
-
