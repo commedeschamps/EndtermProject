@@ -3,37 +3,60 @@ package controllers;
 import controllers.interfaces.IUserController;
 import models.User;
 import repositories.interfaces.IUserRepository;
-
-import java.util.List;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class UserController implements IUserController {
-    private final IUserRepository repo;
+    private final IUserRepository userRepository;
 
-    public UserController(IUserRepository repo) {
-        this.repo = repo;
+    public UserController(IUserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
-    public String createUser(String name, String surname, String gender) {
-        boolean male = gender.equalsIgnoreCase("male");
-        User user = new User(name, surname, male);
-        boolean created = repo.createUser(user);
-        return (created) ? "User was created" : "User creation was failed";
-    }
-
-    @Override
-    public String getUserById(int id) {
-        User user = repo.getUserById(id);
-        return (user == null) ? "User was not found" : user.toString();
-    }
-
-    @Override
-    public String getAllUsers() {
-        List<User> users = repo.getAllUsers();
-        StringBuilder response = new StringBuilder();
-        for (User user : users) {
-            response.append(user.toString()).append("\n");
+    public String createUser(String email, String password, String name) {
+        User existingUser = userRepository.getUserByEmail(email);
+        if (existingUser != null) {
+            return "User with this email already exists!";
         }
-        return response.toString();
+
+        String hashedPassword = hashPassword(password);
+        if (hashedPassword == null) {
+            return "Error in hashing password.";
+        }
+
+        User user = new User(email, hashedPassword, name);
+        boolean isCreated = userRepository.createUser(user);
+        return isCreated ? "User registered successfully" : "Registration failed";
+    }
+
+    @Override
+    public String loginUser(String email, String password) {
+        User user = userRepository.getUserByEmail(email);
+        if (user == null) {
+            return "Invalid email or password";
+        }
+
+        String hashedPassword = hashPassword(password);
+        if (hashedPassword != null && hashedPassword.equals(user.getPassword())) {
+            return "Login successful";
+        } else {
+            return "Invalid email or password";
+        }
+    }
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes());
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                hexString.append(String.format("%02x", b));
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 }
