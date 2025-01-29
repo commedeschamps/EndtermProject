@@ -1,10 +1,7 @@
 import controllers.interfaces.*;
-
 import java.util.InputMismatchException;
 import java.util.Locale;
 import java.util.Scanner;
-
-
 
 public class ShopApplication {
     private final IUserController userController;
@@ -13,8 +10,10 @@ public class ShopApplication {
     private final ICartController cartController;
     private final Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
 
-    public ShopApplication(IUserController userController, IProductController productController,
-                           IOrderController orderController, IOrderItemController orderItemController, ICartController cartController) {
+    public ShopApplication(IUserController userController,
+                           IProductController productController,
+                           IOrderController orderController,
+                           ICartController cartController) {
         this.userController = userController;
         this.productController = productController;
         this.orderController = orderController;
@@ -76,7 +75,8 @@ public class ShopApplication {
         System.out.print("Select an option: ");
     }
 
-    private void filterByCategory() {
+
+private void filterByCategory() {
         System.out.print("Enter category: ");
         String category = scanner.nextLine();
         String response = productController.getProductsByCategory(category);
@@ -95,7 +95,7 @@ public class ShopApplication {
         System.out.println(response);
     }
 
-    private void sortProductsDescending() {
+private void sortProductsDescending() {
         String response = productController.sortProductsByPriceDescending();
         System.out.println(response);
     }
@@ -112,26 +112,35 @@ public class ShopApplication {
         System.out.println(response);
     }
 
-    private void createUser() {
+
+private void createUser() {
         System.out.println("Register New User:");
+        String email = getStringInput("Enter email: ");
+        String password = getStringInput("Enter password: ");
         String name = getStringInput("Enter name: ");
-        String surname = getStringInput("Enter surname: ");
-        String gender = getStringInput("Enter gender (male/female): ");
-        String response = userController.createUser(name, surname, gender);
+        String response = userController.createUser(email, password, name);
         System.out.println(response);
     }
 
     private void loginUser() {
-        System.out.println("Login functionality is not implemented yet.");
+        System.out.println("Login User:");
+        String email = getStringInput("Enter email: ");
+        String password = getStringInput("Enter password: ");
+        String response = userController.loginUser(email, password);
+        System.out.println(response);
     }
 
     private void createOrder() {
         System.out.println("Create a New Order:");
         int userId = getIntInput("Enter User ID: ");
         double totalPrice = getDoubleInput("Enter Total Price: ");
-        String response = orderController.createOrder(userId, totalPrice);
+        String deliveryMethod = getStringInput("Enter delivery method (delivery/self-pickup): ");
+        String paymentMethod = getStringInput("Enter payment method (cash/card/nfc): ");
+
+        String response = orderController.createOrder(userId, totalPrice, deliveryMethod, paymentMethod);
         System.out.println(response);
     }
+
 
     private void viewCart() {
         int userId = getIntInput("Enter User ID to view cart: ");
@@ -185,7 +194,8 @@ public class ShopApplication {
         return input;
     }
 
-    private void addProduct() {
+
+private void addProduct() {
         String name = getStringInput("Enter product name: ");
         String description = getStringInput("Enter product description: ");
         double price = getDoubleInput("Enter product price: ");
@@ -195,10 +205,10 @@ public class ShopApplication {
         String response = productController.createProduct(name, description, price, quantity, category);
         System.out.println(response);
     }
-    private void exitApplication() {
+
+private void exitApplication() {
         System.out.println("Exiting application...");
         scanner.close();
         System.exit(0);
     }
-
 }
