@@ -4,7 +4,7 @@ import controllers.interfaces.IOrderController;
 import models.Order;
 import repositories.interfaces.IOrderRepository;
 
-import java.util.Date;  // Добавьте этот импорт
+import java.util.Date; 
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -17,7 +17,6 @@ public class OrderController implements IOrderController {
 
     @Override
     public String createOrder(int userId, double totalAmount) {
-        // Создание нового заказа с текущей датой
         Order order = new Order(userId, new Date(), totalAmount);
         boolean created = repo.createOrder(order);
         return (created) ? "Order was created" : "Order creation failed";
@@ -25,14 +24,12 @@ public class OrderController implements IOrderController {
 
     @Override
     public String getOrderById(int id) {
-        // Получение заказа по ID
         Order order = repo.getOrderById(id);
         return (order == null) ? "Order not found" : order.toString();
     }
 
     @Override
     public String getAllOrders() {
-        // Получение всех заказов
         List<Order> orders = repo.getAllOrders();
         if (orders == null || orders.isEmpty()) {
             return "No orders available.";
