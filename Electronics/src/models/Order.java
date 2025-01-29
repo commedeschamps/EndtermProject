@@ -6,61 +6,58 @@ public class Order {
     private int id;
     private int userId;
     private Date orderDate;
-    private double totalPrice;
+    private double totalAmount;
+    private String deliveryMethod; // choice delivery or pick-up
+    private String paymentMethod;  //Cash, credit card, nfc
 
-    public Order() {
+    public Order(int userId, Date orderDate, double totalAmount, String deliveryMethod, String paymentMethod) {
+        this.userId = userId;
+        this.orderDate = orderDate;
+        this.totalAmount = totalAmount;
+        this.deliveryMethod = deliveryMethod;
+        this.paymentMethod = paymentMethod;
     }
 
-    public Order(int userId, Date orderDate, double totalPrice) {
-        setUserId(userId);
-        setOrderDate(orderDate);
-        setTotalPrice(totalPrice);
-    }
-
-    public Order(int id, int userId, Date orderDate, double totalPrice) {
-        this(userId, orderDate, totalPrice);
-        setId(id);
+    public Order(int id, int userId, Date orderDate, double totalAmount) {
+        this.id = id;
+        this.userId = userId;
+        this.orderDate = orderDate;
+        this.totalAmount = totalAmount;
+        this.deliveryMethod = deliveryMethod;
+        this.paymentMethod = paymentMethod;
     }
 
     public int getId() {
         return id;
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
-
     public int getUserId() {
         return userId;
-    }
-
-    public void setUserId(int userId) {
-        this.userId = userId;
     }
 
     public Date getOrderDate() {
         return orderDate;
     }
 
-    public void setOrderDate(Date orderDate) {
-        this.orderDate = orderDate;
+    public double getTotalAmount() {
+        return totalAmount;
     }
 
-    public double getTotalPrice() {
-        return totalPrice;
+    public String getDeliveryMethod() {
+        return deliveryMethod;
     }
 
-    public void setTotalPrice(double totalPrice) {
-        this.totalPrice = totalPrice;
+    public String getPaymentMethod() {
+        return paymentMethod;
     }
 
     @Override
     public String toString() {
-        return "Order{" +
-                "id=" + id +
-                ", userId=" + userId +
-                ", orderDate=" + orderDate +
-                ", totalAmount=" + totalPrice +
-                '}';
+        return "Order ID: " + id +
+                "\nUser ID: " + userId +
+                "\nOrder Date: " + orderDate +
+                "\nTotal Amount: " + totalAmount +
+                "\nDelivery Method: " + deliveryMethod +
+                "\nPayment Method: " + paymentMethod;
     }
 }
