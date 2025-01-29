@@ -21,12 +21,14 @@ public class OrderRepository implements IOrderRepository {
         Connection connection = null;
         try {
             connection = db.getConnection();
-            String sql = "INSERT INTO orders(user_id, order_date, total_amount) VALUES (?, ?, ?)";
+            String sql = "INSERT INTO orders(user_id, order_date, total_amount, delivery_method, payment_method) VALUES (?, ?, ?, ?, ?)";
             PreparedStatement st = connection.prepareStatement(sql);
 
             st.setInt(1, order.getUserId());
             st.setDate(2, new java.sql.Date(order.getOrderDate().getTime()));
-            st.setDouble(3, order.getTotalPrice());
+            st.setDouble(3, order.getTotalAmount());
+            st.setString(4, order.getDeliveryMethod());
+            st.setString(5, order.getPaymentMethod());
 
             st.execute();
             return true;
