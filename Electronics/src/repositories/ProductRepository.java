@@ -52,6 +52,7 @@ public List<Product> getAllProducts() {
 
         while (rs.next()) {
             Product product = new Product(
+                    rs.getInt("id"),
                     rs.getString("name"),
                     rs.getString("description"),
                     rs.getDouble("price"),
