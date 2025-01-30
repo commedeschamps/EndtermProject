@@ -1,7 +1,7 @@
 package models;
 
 public class User {
-    private int id;  // ID пользователя
+    private int id; 
     private String email;
     private String password;
     private String name;
