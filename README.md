@@ -8,14 +8,23 @@ The core backend logic allows users to browse available products, add items to t
 
 By utilizing Java and JDBC, the system ensures reliable database connectivity and efficient data management. This project is designed to handle the essential operations of an online store while delivering a robust and scalable backend infrastructure.
 
-•  Object-Oriented Programming:
-The project heavily relies on the principles of OOP such as abstraction, encapsulation, inheritance, and polymorphism to create reusable and modular code.
-•  Database (PostgreSQL):
-Creating our database and schemas(tables)
-Language Features Used:
-Lambda Expressions: To simplify code and improve readability.
-Interfaces: were used to define contracts for the service and repository layers, promoting flexibility and testability.
-Abstract classes provided base implementations where necessary.
+Project Structure:
 
+Controllers: Handle HTTP requests and define the application's API endpoints.
+Models: Represent database entities, such as products, users, and orders.
+Repositories: Manage data persistence and database interactions.
+Data: Contains initialization scripts, sample data, or configurations.
+Main.java: The main entry point of the application.
+ShopApplication.java: Likely the core application class that runs the Spring Boot or main logic.
 
+Key Features:
 
+Product Catalog – Users can browse electronic items with descriptions and prices.
+User Authentication – Secure login and account management.
+Shopping Cart – Add, remove, and manage selected products before checkout.
+Database Management – Efficiently storing and retrieving product, user, and order data.
+
+Technology Stack:
+Backend: Java
+Database: PostgreSQL
+Architecture: Controller → Service → Repository → Database
