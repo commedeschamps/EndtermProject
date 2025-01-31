@@ -3,60 +3,50 @@ package controllers;
 import controllers.interfaces.IUserController;
 import models.User;
 import repositories.interfaces.IUserRepository;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+
+import java.util.List;
 
 public class UserController implements IUserController {
-    private final IUserRepository userRepository;
+    private final IUserRepository repo;
 
-    public UserController(IUserRepository userRepository) {
-        this.userRepository = userRepository;
+    public UserController(IUserRepository repo) {
+        this.repo = repo;
     }
 
     @Override
-    public String createUser(String email, String password, String name) {
-        User existingUser = userRepository.getUserByEmail(email);
-        if (existingUser != null) {
-            return "User with this email already exists!";
+    public String createUser(String name, String surname, String gender) {
+        if (name == null || name.isEmpty() || surname == null || surname.isEmpty() || gender == null || gender.isEmpty()) {
+            return "Invalid input. Please provide valid name, surname, and gender.";
         }
 
-        String hashedPassword = hashPassword(password);
-        if (hashedPassword == null) {
-            return "Error in hashing password.";
-        }
+        boolean male = gender.equalsIgnoreCase("male");
+        User user = new User(name, surname, male);
+        boolean created = repo.createUser(user);
 
-        User user = new User(email, hashedPassword, name);
-        boolean isCreated = userRepository.createUser(user);
-        return isCreated ? "User registered successfully" : "Registration failed";
+        return created ? "User was created successfully." : "User creation failed. Please try again.";
     }
 
     @Override
-    public String loginUser(String email, String password) {
-        User user = userRepository.getUserByEmail(email);
-        if (user == null) {
-            return "Invalid email or password";
+    public String getUserById(int id) {
+        if (id <= 0) {
+            return "Invalid user ID.";
         }
 
-        String hashedPassword = hashPassword(password);
-        if (hashedPassword != null && hashedPassword.equals(user.getPassword())) {
-            return "Login successful";
-        } else {
-            return "Invalid email or password";
-        }
+        User user = repo.getUserById(id);
+        return user == null ? "User not found." : user.toString();
     }
 
-    private String hashPassword(String password) {
-        try {
-            MessageDigest digest = MessageDigest.getInstance("SHA-256");
-            byte[] hash = digest.digest(password.getBytes());
-            StringBuilder hexString = new StringBuilder();
-            for (byte b : hash) {
-                hexString.append(String.format("%02x", b));
-            }
-            return hexString.toString();
-        } catch (NoSuchAlgorithmException e) {
-            e.printStackTrace();
-            return null;
+    @Override
+    public String getAllUsers() {
+        List<User> users = repo.getAllUsers();
+        if (users == null || users.isEmpty()) {
+            return "No users available.";
         }
+
+        StringBuilder response = new StringBuilder();
+        for (User user : users) {
+            response.append(user.toString()).append("\n");
+        }
+        return response.toString();
     }
 }
