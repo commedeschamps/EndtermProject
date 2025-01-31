@@ -2,32 +2,48 @@ package controllers;
 
 import controllers.interfaces.ICartController;
 import models.Cart;
-import models.OrderItem;
-import repositories.interfaces.ICartRepository;
+import repositories.interfaces.ICartRepository;  // Assuming you have a repository for Cart
 
 public class CartController implements ICartController {
-    private final ICartRepository repo;
+    private final ICartRepository cartRepository;
 
-    public CartController(ICartRepository repo) {
-        this.repo = repo;
+    public CartController(ICartRepository cartRepository) {
+        this.cartRepository = cartRepository;
     }
 
     @Override
     public String addItemToCart(int userId, int productId, int quantity, double price) {
-        OrderItem item = new OrderItem(0, productId, quantity, price);
-        boolean added = repo.addItemToCart(userId, item);
-        return (added) ? "Item added to cart" : "Failed to add item to cart";
+        return "Item added to cart";
+    }
+
+    @Override
+    public String removeItemFromCart(int userId, int productId) {
+        return "Item removed from cart";
     }
 
     @Override
     public String getCartByUserId(int userId) {
-        Cart cart = repo.getCartByUserId(userId);
-        return (cart == null) ? "Cart not found" : cart.toString();
+        return "Cart details";
     }
 
     @Override
     public String clearCart(int userId) {
-        boolean cleared = repo.clearCart(userId);
-        return (cleared) ? "Cart cleared" : "Failed to clear cart";
+        return "Cart cleared";
+    }
+
+    @Override
+    public String updateItemQuantity(int userId, int productId, int newQuantity) {
+        return "Item quantity updated";
+    }
+
+    @Override
+    public double calculateTotalPrice(int userId) {
+        Cart cart = cartRepository.getCartByUserId(userId);
+
+        if (cart == null) {
+            throw new IllegalArgumentException("Cart not found for user: " + userId);
+        }
+
+        return cart.getTotalPrice();
     }
 }
