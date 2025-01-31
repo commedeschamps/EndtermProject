@@ -12,8 +12,8 @@ public class Cart {
     }
 
     public Cart(int userId) {
-        this();
-        setUserId(userId);
+        this();  
+        this.userId = userId;
     }
 
     public int getUserId() {
@@ -21,7 +21,11 @@ public class Cart {
     }
 
     public void setUserId(int userId) {
-        this.userId = userId;
+        if (userId > 0) {  
+            this.userId = userId;
+        } else {
+            throw new IllegalArgumentException("User ID must be positive.");
+        }
     }
 
     public List<OrderItem> getItems() {
@@ -29,15 +33,37 @@ public class Cart {
     }
 
     public void setItems(List<OrderItem> items) {
-        this.items = items;
+        if (items != null) {  
+            this.items = items;
+        } else {
+            throw new IllegalArgumentException("Items list cannot be null.");
+        }
     }
 
     public void addItem(OrderItem item) {
-        items.add(item);
+        if (item != null) {
+            items.add(item);
+        } else {
+            throw new IllegalArgumentException("Cannot add null item.");
+        }
     }
 
     public void removeItem(OrderItem item) {
-        items.remove(item);
+        if (item != null && items.contains(item)) {
+            items.remove(item);
+        } else {
+            throw new IllegalArgumentException("Item does not exist in the cart.");
+        }
+    }
+
+    public void clear() {
+        items.clear();
+    }
+
+    public double getTotalPrice() {
+        return items.stream()
+                .mapToDouble(OrderItem::getTotalPrice)
+                .sum();
     }
 
     @Override
@@ -45,6 +71,7 @@ public class Cart {
         return "Cart{" +
                 "userId=" + userId +
                 ", items=" + items +
+                ", totalPrice=" + getTotalPrice() +
                 '}';
     }
 }
