@@ -35,4 +35,10 @@ public class OrderItemController implements IOrderItemController {
         }
         return response.toString();
     }
+
+    @Override
+    public double calculateOrderItemTotalPrice(int quantity, double price) {
+        return quantity * price;
+    }
+
 }
