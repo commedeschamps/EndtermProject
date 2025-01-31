@@ -4,29 +4,25 @@ import data.interfaceces.IDB;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import data.PostgresDB;
-
 
 public class PostgresDB implements IDB {
-    private String host;
+    private String connectionUrl;
     private String username;
     private String password;
-    private String dbName;
     private Connection connection;
 
-    public PostgresDB(String host, String username, String password, String dbName) {
-        this.setHost(host);
+    public PostgresDB(String connectionUrl, String username, String password) {
+        this.setConnectionUrl(connectionUrl);
         this.setUsername(username);
         this.setPassword(password);
-        this.setDbName(dbName);
     }
 
-    public String getHost() {
-        return this.host;
+    public String getConnectionUrl() {
+        return this.connectionUrl;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setConnectionUrl(String connectionUrl) {
+        this.connectionUrl = connectionUrl;
     }
 
     public String getUsername() {
@@ -45,17 +41,7 @@ public class PostgresDB implements IDB {
         this.password = password;
     }
 
-    public String getDbName() {
-        return this.dbName;
-    }
-
-    public void setDbName(String dbName) {
-        this.dbName = dbName;
-    }
-
     public Connection getConnection() {
-        String connectionUrl = this.host + "/" + this.dbName;
-
         try {
             if (this.connection != null && !this.connection.isClosed()) {
                 return this.connection;
@@ -78,7 +64,5 @@ public class PostgresDB implements IDB {
                 System.out.println("Failed to close connection" + e.getMessage());
             }
         }
-
     }
 }
-
