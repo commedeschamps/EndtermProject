@@ -1,4 +1,5 @@
 import controllers.interfaces.*;
+import java.sql.*;
 import java.util.InputMismatchException;
 import java.util.Locale;
 import java.util.Scanner;
@@ -9,17 +10,16 @@ public class ShopApplication {
     private final IOrderController orderController;
     private final ICartController cartController;
     private final Scanner scanner = new Scanner(System.in).useLocale(Locale.US);
+    private final Connection connection;
 
-    public ShopApplication(IUserController userController,
-                           IProductController productController,
-                           IOrderController orderController,
-                           ICartController cartController) {
+    public ShopApplication(IUserController userController, IProductController productController,
+                           IOrderController orderController, ICartController cartController) throws SQLException {
         this.userController = userController;
         this.productController = productController;
         this.orderController = orderController;
         this.cartController = cartController;
+        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "4444");
     }
-
 
     public void start() {
         while (true) {
@@ -36,12 +36,13 @@ public class ShopApplication {
                     case 6 -> viewCart();
                     case 7 -> addToCart();
                     case 8 -> removeFromCart();
-                    case 9 -> checkout();
+                    case 9 -> checkBalance();
                     case 10 -> addProduct();
                     case 11 -> filterByCategory();
                     case 12 -> filterByPriceRange();
                     case 13 -> sortProductsAscending();
                     case 14 -> sortProductsDescending();
+                    case 15 -> topUpBalance();
                     case 0 -> exitApplication();
                     default -> System.out.println("Invalid option. Please try again.");
                 }
@@ -65,87 +66,124 @@ public class ShopApplication {
         System.out.println("6. View Cart");
         System.out.println("7. Add to Cart");
         System.out.println("8. Remove from Cart");
-        System.out.println("9. Checkout");
+        System.out.println("9. Check Balance");
         System.out.println("10. Add New Product");
         System.out.println("11. Filter Products by Category");
         System.out.println("12. Filter Products by Price Range");
         System.out.println("13. Sort Products by Price (Ascending)");
         System.out.println("14. Sort Products by Price (Descending)");
+        System.out.println("15. Top Up Balance");
         System.out.println("0. Exit");
         System.out.print("Select an option: ");
     }
 
-
-private void filterByCategory() {
-        System.out.print("Enter category: ");
-        String category = scanner.nextLine();
-        String response = productController.getProductsByCategory(category);
-        System.out.println(response);
-    }
-
-    private void filterByPriceRange() {
-        double minPrice = getDoubleInput("Enter minimum price: ");
-        double maxPrice = getDoubleInput("Enter maximum price: ");
-        String response = productController.getProductsByPriceRange(minPrice, maxPrice);
-        System.out.println(response);
-    }
-
-    private void sortProductsAscending() {
-        String response = productController.sortProductsByPriceAscending();
-        System.out.println(response);
-    }
-
-private void sortProductsDescending() {
-        String response = productController.sortProductsByPriceDescending();
-        System.out.println(response);
-    }
-
     private void viewAllProducts() {
-        System.out.println("All Products:");
-        String response = productController.getAllProducts();
-        System.out.println(response);
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT * FROM products");
+            System.out.println("All Products:");
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("id") + ", Name: " + rs.getString("name") + ", Price: " + rs.getDouble("price"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching products: " + e.getMessage());
+        }
     }
 
     private void viewProductDetails() {
         int productId = getIntInput("Enter Product ID to view details: ");
-        String response = productController.getProductById(productId);
-        System.out.println(response);
+        try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM products WHERE id = ?")) {
+            stmt.setInt(1, productId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                System.out.println("Product ID: " + rs.getInt("id"));
+                System.out.println("Name: " + rs.getString("name"));
+                System.out.println("Description: " + rs.getString("description"));
+                System.out.println("Price: " + rs.getDouble("price"));
+                System.out.println("Category: " + rs.getString("category"));
+            } else {
+                System.out.println("Product not found.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching product details: " + e.getMessage());
+        }
     }
 
-
-private void createUser() {
-        System.out.println("Register New User:");
+    private void createUser() {
+        String name = getStringInput("Enter name: ");
         String email = getStringInput("Enter email: ");
         String password = getStringInput("Enter password: ");
-        String name = getStringInput("Enter name: ");
-        String response = userController.createUser(email, password, name);
-        System.out.println(response);
+        double balance = getDoubleInput("Enter balance: ");
+        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO users (name, email, password, balance) VALUES (?, ?, ?, ?)")) {
+            stmt.setString(1, name);
+            stmt.setString(2, email);
+            stmt.setString(3, password);
+            stmt.setDouble(4, balance);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("User created successfully.");
+            } else {
+                System.out.println("Error creating user.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error creating user: " + e.getMessage());
+        }
     }
 
     private void loginUser() {
-        System.out.println("Login User:");
         String email = getStringInput("Enter email: ");
         String password = getStringInput("Enter password: ");
-        String response = userController.loginUser(email, password);
-        System.out.println(response);
+        try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM users WHERE email = ? AND password = ?")) {
+            stmt.setString(1, email);
+            stmt.setString(2, password);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                System.out.println("Login successful. Welcome, " + rs.getString("name"));
+            } else {
+                System.out.println("Invalid email or password.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error during login: " + e.getMessage());
+        }
     }
 
     private void createOrder() {
-        System.out.println("Create a New Order:");
-        int userId = getIntInput("Enter User ID: ");
+        int productId = getIntInput("Enter Product ID: ");
+        int quantity = getIntInput("Enter Quantity: ");
         double totalPrice = getDoubleInput("Enter Total Price: ");
-        String deliveryMethod = getStringInput("Enter delivery method (delivery/self-pickup): ");
-        String paymentMethod = getStringInput("Enter payment method (cash/card/nfc): ");
-
-        String response = orderController.createOrder(userId, totalPrice, deliveryMethod, paymentMethod);
-        System.out.println(response);
+        int userId = getIntInput("Enter User ID: ");
+        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO orders (user_id, product_id, quantity, total_price) VALUES (?, ?, ?, ?)")) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, productId);
+            stmt.setInt(3, quantity);
+            stmt.setDouble(4, totalPrice);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Order created successfully.");
+            } else {
+                System.out.println("Error creating order.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error creating order: " + e.getMessage());
+        }
     }
-
 
     private void viewCart() {
         int userId = getIntInput("Enter User ID to view cart: ");
-        String response = cartController.getCartByUserId(userId);
-        System.out.println(response);
+        try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM cart WHERE user_id = ?")) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            double totalCost = 0;
+            while (rs.next()) {
+                int productId = rs.getInt("product_id");
+                int quantity = rs.getInt("quantity");
+                double price = rs.getDouble("price");
+                System.out.println("Product ID: " + productId + ", Quantity: " + quantity + ", Price: " + price);
+                totalCost += quantity * price;
+            }
+            System.out.println("Total Cart Value: " + totalCost);
+        } catch (SQLException e) {
+            System.out.println("Error fetching cart: " + e.getMessage());
+        }
     }
 
     private void addToCart() {
@@ -153,16 +191,143 @@ private void createUser() {
         int productId = getIntInput("Enter Product ID: ");
         int quantity = getIntInput("Enter Quantity: ");
         double price = getDoubleInput("Enter Price: ");
-        String response = cartController.addItemToCart(userId, productId, quantity, price);
-        System.out.println(response);
+        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO cart (user_id, product_id, quantity, price) VALUES (?, ?, ?, ?)")) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, productId);
+            stmt.setInt(3, quantity);
+            stmt.setDouble(4, price);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Item added to cart.");
+            } else {
+                System.out.println("Error adding item to cart.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error adding item to cart: " + e.getMessage());
+        }
     }
 
     private void removeFromCart() {
-        System.out.println("Remove From Cart functionality is not implemented yet.");
+        int userId = getIntInput("Enter User ID: ");
+        int productId = getIntInput("Enter Product ID to remove: ");
+        try (PreparedStatement stmt = connection.prepareStatement("DELETE FROM cart WHERE user_id = ? AND product_id = ?")) {
+            stmt.setInt(1, userId);
+            stmt.setInt(2, productId);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Item removed from cart.");
+            } else {
+                System.out.println("Error removing item from cart.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error removing item from cart: " + e.getMessage());
+        }
     }
 
-    private void checkout() {
-        System.out.println("Checkout functionality is not implemented yet.");
+    private void checkBalance() {
+        int userId = getIntInput("Enter User ID to check balance: ");
+        try (PreparedStatement stmt = connection.prepareStatement("SELECT balance FROM users WHERE id = ?")) {
+            stmt.setInt(1, userId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                System.out.println("User balance: " + rs.getDouble("balance"));
+            } else {
+                System.out.println("User not found.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error checking balance: " + e.getMessage());
+        }
+    }
+
+    private void addProduct() {
+        String name = getStringInput("Enter product name: ");
+        String description = getStringInput("Enter product description: ");
+        double price = getDoubleInput("Enter product price: ");
+        int quantity = getIntInput("Enter product quantity: ");
+        String category = getStringInput("Enter product category: ");
+        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO products (name, description, price, quantity, category) VALUES (?, ?, ?, ?, ?)")) {
+            stmt.setString(1, name);
+            stmt.setString(2, description);
+            stmt.setDouble(3, price);
+            stmt.setInt(4, quantity);
+            stmt.setString(5, category);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Product added successfully.");
+            } else {
+                System.out.println("Error adding product.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error adding product: " + e.getMessage());
+        }
+    }
+
+    private void filterByCategory() {
+        System.out.print("Enter category: ");
+        String category = scanner.nextLine();
+        try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM products WHERE category = ?")) {
+            stmt.setString(1, category);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("id") + ", Name: " + rs.getString("name") + ", Price: " + rs.getDouble("price"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error filtering products by category: " + e.getMessage());
+        }
+    }
+
+    private void filterByPriceRange() {
+        double minPrice = getDoubleInput("Enter minimum price: ");
+        double maxPrice = getDoubleInput("Enter maximum price: ");
+        try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM products WHERE price BETWEEN ? AND ?")) {
+            stmt.setDouble(1, minPrice);
+            stmt.setDouble(2, maxPrice);
+            ResultSet rs = stmt.executeQuery();
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("id") + ", Name: " + rs.getString("name") + ", Price: " + rs.getDouble("price"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error filtering products by price range: " + e.getMessage());
+        }
+    }
+
+    private void sortProductsAscending() {
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT * FROM products ORDER BY price ASC");
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("id") + ", Name: " + rs.getString("name") + ", Price: " + rs.getDouble("price"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error sorting products ascending: " + e.getMessage());
+        }
+    }
+
+    private void sortProductsDescending() {
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT * FROM products ORDER BY price DESC");
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("id") + ", Name: " + rs.getString("name") + ", Price: " + rs.getDouble("price"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error sorting products descending: " + e.getMessage());
+        }
+    }
+
+    private void topUpBalance() {
+        int userId = getIntInput("Enter User ID to top up balance: ");
+        double amount = getDoubleInput("Enter amount to add: ");
+        try (PreparedStatement stmt = connection.prepareStatement("UPDATE users SET balance = balance + ? WHERE id = ?")) {
+            stmt.setDouble(1, amount);
+            stmt.setInt(2, userId);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Balance updated successfully.");
+            } else {
+                System.out.println("Error updating balance.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error updating balance: " + e.getMessage());
+        }
     }
 
     private int getIntInput(String prompt) {
@@ -194,21 +359,15 @@ private void createUser() {
         return input;
     }
 
-
-private void addProduct() {
-        String name = getStringInput("Enter product name: ");
-        String description = getStringInput("Enter product description: ");
-        double price = getDoubleInput("Enter product price: ");
-        int quantity = getIntInput("Enter product quantity: ");
-        String category = getStringInput("Enter product category: ");
-
-        String response = productController.createProduct(name, description, price, quantity, category);
-        System.out.println(response);
-    }
-
-private void exitApplication() {
+    private void exitApplication() {
         System.out.println("Exiting application...");
-        scanner.close();
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+            }
+        } catch (SQLException e) {
+            System.out.println("Error closing connection: " + e.getMessage());
+        }
         System.exit(0);
     }
 }
