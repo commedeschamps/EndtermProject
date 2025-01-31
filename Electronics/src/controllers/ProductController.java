@@ -16,15 +16,24 @@ public class ProductController implements IProductController {
 
     @Override
     public String createProduct(String name, String description, double price, int quantity, String category) {
+        if (name == null || name.isEmpty() || description == null || description.isEmpty() || price <= 0 || quantity < 0 || category == null || category.isEmpty()) {
+            return "Invalid input values. Please check the data and try again.";
+        }
+
         Product product = new Product(name, description, price, quantity, category);
         boolean created = repo.createProduct(product);
-        return (created) ? "Product was created" : "Product creation failed";
+
+        return created ? "Product was created successfully." : "Product creation failed. Please try again.";
     }
 
     @Override
     public String getProductById(int id) {
+        if (id <= 0) {
+            return "Invalid product ID.";
+        }
+
         Product product = repo.getProductById(id);
-        return (product == null) ? "Product not found" : product.toString();
+        return (product == null) ? "Product not found." : product.toString();
     }
 
     @Override
@@ -33,6 +42,7 @@ public class ProductController implements IProductController {
         if (products == null || products.isEmpty()) {
             return "No products available.";
         }
+
         return products.stream()
                 .map(Product::toString)
                 .collect(Collectors.joining("\n"));
@@ -40,6 +50,10 @@ public class ProductController implements IProductController {
 
     @Override
     public String getProductsByCategory(String category) {
+        if (category == null || category.isEmpty()) {
+            return "Invalid category input.";
+        }
+
         List<Product> products = repo.getAllProducts().stream()
                 .filter(p -> p.getCategory().equalsIgnoreCase(category))
                 .collect(Collectors.toList());
@@ -55,6 +69,10 @@ public class ProductController implements IProductController {
 
     @Override
     public String getProductsByPriceRange(double minPrice, double maxPrice) {
+        if (minPrice < 0 || maxPrice < 0 || minPrice > maxPrice) {
+            return "Invalid price range.";
+        }
+
         List<Product> products = repo.getAllProducts().stream()
                 .filter(p -> p.getPrice() >= minPrice && p.getPrice() <= maxPrice)
                 .collect(Collectors.toList());
@@ -74,7 +92,7 @@ public class ProductController implements IProductController {
                 .sorted((p1, p2) -> Double.compare(p1.getPrice(), p2.getPrice()))
                 .collect(Collectors.toList());
 
-        return products.stream()
+        return products.isEmpty() ? "No products available." : products.stream()
                 .map(Product::toString)
                 .collect(Collectors.joining("\n"));
     }
@@ -85,7 +103,7 @@ public class ProductController implements IProductController {
                 .sorted((p1, p2) -> Double.compare(p2.getPrice(), p1.getPrice()))
                 .collect(Collectors.toList());
 
-        return products.stream()
+        return products.isEmpty() ? "No products available." : products.stream()
                 .map(Product::toString)
                 .collect(Collectors.joining("\n"));
     }
