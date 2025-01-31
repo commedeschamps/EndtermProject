@@ -4,7 +4,7 @@ import controllers.interfaces.IOrderController;
 import models.Order;
 import repositories.interfaces.IOrderRepository;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -16,16 +16,22 @@ public class OrderController implements IOrderController {
     }
 
     @Override
-    public String createOrder(int userId, double totalAmount, String deliveryMethod, String paymentMethod) {
-        Order order = new Order(userId, new Date(), totalAmount, deliveryMethod, paymentMethod);
-        boolean created = repo.createOrder(order);
-        return (created) ? "Order was created successfully" : "Order creation failed";
+    public String createOrder(int userId, double totalAmount) {
+        LocalDateTime orderDateTime = LocalDateTime.now();
+        String orderDate = orderDateTime.toString();
+
+        String shippingAddress = "123 Shipping St.";
+        String billingAddress = "123 Billing St.";
+
+        Order newOrder = new Order(userId, totalAmount, orderDate, shippingAddress, billingAddress);
+        boolean created = repo.createOrder(newOrder);
+        return created ? "Order was created" : "Order creation failed";
     }
 
     @Override
     public String getOrderById(int id) {
         Order order = repo.getOrderById(id);
-        return (order == null) ? "Order not found" : order.toString();
+        return order == null ? "Order not found" : order.toString();
     }
 
     @Override
@@ -34,6 +40,18 @@ public class OrderController implements IOrderController {
         if (orders == null || orders.isEmpty()) {
             return "No orders available.";
         }
+        return orders.stream()
+                .map(Order::toString)
+                .collect(Collectors.joining("\n"));
+    }
+
+    @Override
+    public String getUserOrders(int userId) {
+        List<Order> orders = repo.getOrdersByUserId(userId);
+        if (orders.isEmpty()) {
+            return "No orders found for this user.";
+        }
+
         return orders.stream()
                 .map(Order::toString)
                 .collect(Collectors.joining("\n"));
