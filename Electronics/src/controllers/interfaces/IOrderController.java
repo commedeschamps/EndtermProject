@@ -1,7 +1,8 @@
 package controllers.interfaces;
 
 public interface IOrderController {
-    String createOrder(int userId, double totalAmount, String deliveryMethod, String paymentMethod);
+    String createOrder(int userId, double totalAmount);
     String getOrderById(int id);
     String getAllOrders();
+    String getUserOrders(int userId);
 }
