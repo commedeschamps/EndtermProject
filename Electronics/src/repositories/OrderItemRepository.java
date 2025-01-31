@@ -3,7 +3,6 @@ package repositories;
 import data.interfaceces.IDB;
 import models.OrderItem;
 import repositories.interfaces.IOrderItemRepository;
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +35,6 @@ public class OrderItemRepository implements IOrderItemRepository {
         return false;
     }
 
-    @Override
     public List<OrderItem> getItemsByOrderId(int orderId) {
         Connection connection = null;
         try {
@@ -48,7 +46,7 @@ public class OrderItemRepository implements IOrderItemRepository {
             ResultSet rs = st.executeQuery();
             List<OrderItem> items = new ArrayList<>();
             while (rs.next()) {
-                OrderItem item = new OrderItem(rs.getInt("id"),
+                OrderItem item = new OrderItem(rs.getInt("id"),    
                         rs.getInt("order_id"),
                         rs.getInt("product_id"),
                         rs.getInt("quantity"),
@@ -61,6 +59,7 @@ public class OrderItemRepository implements IOrderItemRepository {
         }
         return null;
     }
+
 
     @Override
     public OrderItem getOrderItemById(int id) {
@@ -108,5 +107,40 @@ public class OrderItemRepository implements IOrderItemRepository {
             System.out.println("SQL error: " + e.getMessage());
         }
         return null;
+    }
+
+    @Override
+    public boolean removeOrderItem(int orderId, int productId) {
+        Connection connection = null;
+        try {
+            connection = db.getConnection();
+            String sql = "DELETE FROM order_items WHERE order_id = ? AND product_id = ?";
+            PreparedStatement st = connection.prepareStatement(sql);
+            st.setInt(1, orderId);
+            st.setInt(2, productId);
+
+            int rowsAffected = st.executeUpdate();
+            return rowsAffected > 0; 
+        } catch (SQLException e) {
+            System.out.println("SQL error: " + e.getMessage());
+        }
+        return false;
+    }
+
+    @Override
+    public boolean deleteOrderItem(int id) {
+        Connection connection = null;
+        try {
+            connection = db.getConnection();
+            String sql = "DELETE FROM order_items WHERE id = ?";
+            PreparedStatement st = connection.prepareStatement(sql);
+            st.setInt(1, id);
+
+            int rowsAffected = st.executeUpdate();
+            return rowsAffected > 0; 
+        } catch (SQLException e) {
+            System.out.println("SQL error: " + e.getMessage());
+        }
+        return false;
     }
 }
