@@ -25,6 +25,10 @@ public class Product {
         this.category = category;
     }
 
+    public int getId() {
+        return id;
+    }
+
     public String getName() {
         return name;
     }
@@ -40,11 +44,46 @@ public class Product {
     public int getQuantity() {
         return quantity;
     }
+
     public String getCategory() {
         return category;
     }
+
+    // Setter methods
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
+    }
+
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
     public void setCategory(String category) {
         this.category = category;
+    }
+
+    public void updateQuantity(int quantity) {
+        this.quantity = quantity;
+    }
+
+    public void reduceQuantity(int quantity) {
+        if (this.quantity >= quantity) {
+            this.quantity -= quantity;
+        } else {
+            System.out.println("Insufficient stock.");
+        }
     }
 
     @Override
