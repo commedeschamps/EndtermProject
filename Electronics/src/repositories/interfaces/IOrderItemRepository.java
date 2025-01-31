@@ -1,7 +1,6 @@
 package repositories.interfaces;
 
 import models.OrderItem;
-
 import java.util.List;
 
 public interface IOrderItemRepository {
@@ -9,4 +8,7 @@ public interface IOrderItemRepository {
     List<OrderItem> getItemsByOrderId(int orderId);
     OrderItem getOrderItemById(int id);
     List<OrderItem> getAllOrderItems();
+    boolean removeOrderItem(int orderId, int productId);
+
+    boolean deleteOrderItem(int id);
 }
