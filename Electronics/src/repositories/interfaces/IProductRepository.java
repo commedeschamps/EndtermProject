@@ -8,8 +8,10 @@ public interface IProductRepository {
     boolean createProduct(Product product);
     Product getProductById(int id);
     List<Product> getAllProducts();
-
-    void updateProduct(Product product);
-
-    void deleteProduct(int id);
+    boolean updateProduct(Product product);
+    boolean deleteProduct(int id);
+    List<Product> getProductsByCategory(String category);
+    List<Product> getProductsByPriceRange(double minPrice, double maxPrice);
+    List<Product> sortProductsByPriceAscending();
+    List<Product> sortProductsByPriceDescending();
 }
