@@ -5,9 +5,11 @@ import data.interfaceces.IDB;
 import repositories.*;
 import repositories.interfaces.*;
 
+import java.sql.SQLException;
+
 public class Main {
-    public static void main(String[] args) {
-        IDB db = new PostgresDB("jdbc:postgresql://localhost:5432", "postgres", "1234", "electronics_shop");
+    public static void main(String[] args) throws SQLException {
+        IDB db = new PostgresDB("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "4444");
 
         IUserRepository userRepository = new UserRepository(db);
         IProductRepository productRepository = new ProductRepository(db);
