@@ -46,7 +46,7 @@ public class OrderItemRepository implements IOrderItemRepository {
             ResultSet rs = st.executeQuery();
             List<OrderItem> items = new ArrayList<>();
             while (rs.next()) {
-                OrderItem item = new OrderItem(rs.getInt("id"),    
+                OrderItem item = new OrderItem(rs.getInt("id"),
                         rs.getInt("order_id"),
                         rs.getInt("product_id"),
                         rs.getInt("quantity"),
@@ -120,7 +120,7 @@ public class OrderItemRepository implements IOrderItemRepository {
             st.setInt(2, productId);
 
             int rowsAffected = st.executeUpdate();
-            return rowsAffected > 0; 
+            return rowsAffected > 0;
         } catch (SQLException e) {
             System.out.println("SQL error: " + e.getMessage());
         }
@@ -137,7 +137,7 @@ public class OrderItemRepository implements IOrderItemRepository {
             st.setInt(1, id);
 
             int rowsAffected = st.executeUpdate();
-            return rowsAffected > 0; 
+            return rowsAffected > 0;
         } catch (SQLException e) {
             System.out.println("SQL error: " + e.getMessage());
         }
