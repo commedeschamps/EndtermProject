@@ -1,6 +1,7 @@
 package models;
 
-import java.util.Date; 
+import java.util.Date;
+import java.util.List;
 
 public class Order {
     private int id;
@@ -9,6 +10,10 @@ public class Order {
     private Date orderDate;
     private String shippingAddress;
     private String billingAddress;
+    private String status;  
+    private String paymentMethod;  
+    private String deliveryMethod;  
+    private List<OrderItem> orderItems;  
 
     public Order(int userId, double totalAmount, Date orderDate, String shippingAddress, String billingAddress) {
         this.userId = userId;
@@ -16,6 +21,10 @@ public class Order {
         this.orderDate = orderDate;
         this.shippingAddress = shippingAddress;
         this.billingAddress = billingAddress;
+        this.status = status;
+        this.paymentMethod = paymentMethod;
+        this.deliveryMethod = deliveryMethod;
+        this.orderItems = orderItems;
     }
 
     public Order(int id, int userId, Date orderDate, double totalAmount) {
@@ -23,9 +32,9 @@ public class Order {
         this.userId = userId;
         this.orderDate = orderDate;
         this.totalAmount = totalAmount;
-    }
-
-    public Order(int userId, double totalAmount, String orderDate, String shippingAddress, String billingAddress) {
+        this.status = status;
+        this.paymentMethod = paymentMethod;
+        this.deliveryMethod = deliveryMethod;
     }
 
     public int getId() {
@@ -76,6 +85,46 @@ public class Order {
         this.billingAddress = billingAddress;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getPaymentMethod() {
+        return paymentMethod;
+    }
+
+    public void setPaymentMethod(String paymentMethod) {
+        this.paymentMethod = paymentMethod;
+    }
+
+    public String getDeliveryMethod() {
+        return deliveryMethod;
+    }
+
+    public void setDeliveryMethod(String deliveryMethod) {
+        this.deliveryMethod = deliveryMethod;
+    }
+
+    public List<OrderItem> getOrderItems() {
+        return orderItems;
+    }
+
+    public void setOrderItems(List<OrderItem> orderItems) {
+        this.orderItems = orderItems;
+    }
+
+    public double calculateTotalPrice() {
+        double total = 0;
+        for (OrderItem item : orderItems) {
+            total += item.getPrice() * item.getQuantity();
+        }
+        return total;
+    }
+
     @Override
     public String toString() {
         return "Order{" +
@@ -85,6 +134,10 @@ public class Order {
                 ", orderDate=" + orderDate +
                 ", shippingAddress='" + shippingAddress + '\'' +
                 ", billingAddress='" + billingAddress + '\'' +
+                ", status='" + status + '\'' +
+                ", paymentMethod='" + paymentMethod + '\'' +
+                ", deliveryMethod='" + deliveryMethod + '\'' +
+                ", orderItems=" + orderItems +
                 '}';
     }
 }
