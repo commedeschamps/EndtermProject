@@ -149,23 +149,95 @@ public class ShopApplication {
     private void createOrder() {
         int productId = getIntInput("Enter Product ID: ");
         int quantity = getIntInput("Enter Quantity: ");
-        double totalPrice = getDoubleInput("Enter Total Price: ");
         int userId = getIntInput("Enter User ID: ");
-        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO orders (user_id, product_id, quantity, total_price) VALUES (?, ?, ?, ?)")) {
-            stmt.setInt(1, userId);
-            stmt.setInt(2, productId);
-            stmt.setInt(3, quantity);
-            stmt.setDouble(4, totalPrice);
-            int rowsAffected = stmt.executeUpdate();
-            if (rowsAffected > 0) {
-                System.out.println("Order created successfully.");
+
+        double productPrice = 0;
+        try (PreparedStatement priceStmt = connection.prepareStatement("SELECT price FROM products WHERE id = ?")) {
+            priceStmt.setInt(1, productId);
+            ResultSet rs = priceStmt.executeQuery();
+            if (rs.next()) {
+                productPrice = rs.getDouble("price");
             } else {
-                System.out.println("Error creating order.");
+                System.out.println("Product with ID " + productId + " not found.");
+                return;
             }
         } catch (SQLException e) {
-            System.out.println("Error creating order: " + e.getMessage());
+            System.out.println("Error fetching product price: " + e.getMessage());
+            return;
+        }
+
+        double totalPrice = productPrice * quantity;
+
+        Timestamp orderDate = new Timestamp(System.currentTimeMillis()); 
+
+        String deliveryMethod = getStringInput("Enter delivery method (Pickup, Intercity delivery, delivery in the city): ");
+        String paymentMethod = getStringInput("Enter payment method (Cash, Credit Card, PayPal): ");
+
+        String status = "Pending";
+
+        String issueOrder = getStringInput("Issue it? (Yes/No): ");
+
+        if (issueOrder.equalsIgnoreCase("Yes")) {
+            double userBalance = 0;
+            try (PreparedStatement balanceStmt = connection.prepareStatement("SELECT balance FROM users WHERE id = ?")) {
+                balanceStmt.setInt(1, userId);
+                ResultSet rs = balanceStmt.executeQuery();
+                if (rs.next()) {
+                    userBalance = rs.getDouble("balance");
+                } else {
+                    System.out.println("User not found.");
+                    return;
+                }
+            } catch (SQLException e) {
+                System.out.println("Error checking balance: " + e.getMessage());
+                return;
+            }
+
+            if (userBalance >= totalPrice) {
+                try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO orders (user_id, product_id, quantity, total_amount, order_date, status, delivery_method, payment_method) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
+                    stmt.setInt(1, userId);
+                    stmt.setInt(2, productId);
+                    stmt.setInt(3, quantity);
+                    stmt.setDouble(4, totalPrice); 
+                    stmt.setTimestamp(5, orderDate); 
+                    stmt.setString(6, status); 
+                    stmt.setString(7, deliveryMethod); 
+                    stmt.setString(8, paymentMethod); 
+
+                    int rowsAffected = stmt.executeUpdate();
+                    if (rowsAffected > 0) {
+                        System.out.println("Order created successfully. Total Price: " + totalPrice);
+
+                        try (PreparedStatement updateBalanceStmt = connection.prepareStatement("UPDATE users SET balance = balance - ? WHERE id = ?")) {
+                            updateBalanceStmt.setDouble(1, totalPrice);
+                            updateBalanceStmt.setInt(2, userId);
+                            int balanceUpdated = updateBalanceStmt.executeUpdate();
+                            if (balanceUpdated > 0) {
+                                System.out.println("Amount successfully deducted from balance.");
+                            } else {
+                                System.out.println("Error updating balance.");
+                            }
+                        } catch (SQLException e) {
+                            System.out.println("Error updating balance: " + e.getMessage());
+                        }
+                    } else {
+                        System.out.println("Error creating order.");
+                    }
+                } catch (SQLException e) {
+                    System.out.println("Error creating order: " + e.getMessage());
+                }
+            } else {
+                System.out.println("Insufficient balance. Order cannot be created.");
+            }
+        } else {
+            System.out.println("Order creation canceled.");
         }
     }
+
+
+
+
+
 
     private void viewCart() {
         int userId = getIntInput("Enter User ID to view cart: ");
@@ -173,18 +245,33 @@ public class ShopApplication {
             stmt.setInt(1, userId);
             ResultSet rs = stmt.executeQuery();
             double totalCost = 0;
+
             while (rs.next()) {
                 int productId = rs.getInt("product_id");
                 int quantity = rs.getInt("quantity");
-                double price = rs.getDouble("price");
-                System.out.println("Product ID: " + productId + ", Quantity: " + quantity + ", Price: " + price);
-                totalCost += quantity * price;
+
+                try (PreparedStatement priceStmt = connection.prepareStatement("SELECT price FROM products WHERE id = ?")) {
+                    priceStmt.setInt(1, productId);
+                    ResultSet productRs = priceStmt.executeQuery();
+                    if (productRs.next()) {
+                        double price = productRs.getDouble("price");
+                        double itemCost = price * quantity;
+                        System.out.println("Product ID: " + productId + ", Quantity: " + quantity + ", Price: " + price + ", Total: " + itemCost);
+                        totalCost += itemCost;
+                    } else {
+                        System.out.println("Product with ID " + productId + " not found in products table.");
+                    }
+                } catch (SQLException e) {
+                    System.out.println("Error fetching product price: " + e.getMessage());
+                }
             }
+
             System.out.println("Total Cart Value: " + totalCost);
         } catch (SQLException e) {
             System.out.println("Error fetching cart: " + e.getMessage());
         }
     }
+
 
     private void addToCart() {
         int userId = getIntInput("Enter User ID: ");
