@@ -9,7 +9,7 @@ import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        IDB db = new PostgresDB("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "4444");
+        IDB db = new PostgresDB("jdbc:postgresql://localhost:5433/electronics_shop", "postgres", "1111");
 
         IUserRepository userRepository = new UserRepository(db);
         IProductRepository productRepository = new ProductRepository(db);
