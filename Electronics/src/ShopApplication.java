@@ -18,33 +18,68 @@ public class ShopApplication {
         this.productController = productController;
         this.orderController = orderController;
         this.cartController = cartController;
-        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "4444");
+        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5433/electronics_shop", "postgres", "1111");
     }
 
     public void start() {
+        // Сначала предлагаем зарегистрироваться или войти
+        while (loggedInUserRole == null) {
+            System.out.println("\n--- Welcome to the Electronics Store ---");
+            System.out.println("1. Register");
+            System.out.println("2. Login");
+            System.out.println("0. Exit");
+            System.out.print("Select an option: ");
+
+            try {
+                int option = scanner.nextInt();
+                scanner.nextLine();
+                switch (option) {
+                    case 1 -> createUser();
+                    case 2 -> loginUser();
+                    case 0 -> exitApplication();
+                    default -> System.out.println("Invalid option. Please try again.");
+                }
+            } catch (InputMismatchException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+                scanner.nextLine();
+            } catch (Exception e) {
+                System.out.println("An error occurred: " + e.getMessage());
+            }
+        }
+
+        // После успешного входа отображаем меню в зависимости от роли
         while (true) {
             mainMenu();
             try {
                 int option = scanner.nextInt();
                 scanner.nextLine();
-                switch (option) {
-                    case 1 -> viewAllProducts();
-                    case 2 -> viewProductDetails();
-                    case 3 -> createUser();
-                    case 4 -> loginUser();
-                    case 5 -> createOrder();
-                    case 6 -> viewCart();
-                    case 7 -> addToCart();
-                    case 8 -> removeFromCart();
-                    case 9 -> checkBalance();
-                    case 10 -> addProduct();
-                    case 11 -> filterByCategory();
-                    case 12 -> filterByPriceRange();
-                    case 13 -> sortProductsAscending();
-                    case 14 -> sortProductsDescending();
-                    case 15 -> topUpBalance();
-                    case 0 -> exitApplication();
-                    default -> System.out.println("Invalid option. Please try again.");
+                if ("admin".equals(loggedInUserRole)) {
+                    // Действия для администратора
+                    switch (option) {
+                        case 1 -> addProduct();
+                        case 2 -> deleteProduct();
+                        case 3 -> updateProduct();
+                        case 0 -> exitApplication();
+                        default -> System.out.println("Invalid option. Please try again.");
+                    }
+                } else {
+                    // Действия для пользователя
+                    switch (option) {
+                        case 1 -> viewAllProducts();
+                        case 2 -> viewProductDetails();
+                        case 3 -> createOrder();
+                        case 4 -> viewCart();
+                        case 5 -> addToCart();
+                        case 6 -> removeFromCart();
+                        case 7 -> checkBalance();
+                        case 8 -> filterByCategory();
+                        case 9 -> filterByPriceRange();
+                        case 10 -> sortProductsAscending();
+                        case 11 -> sortProductsDescending();
+                        case 12 -> topUpBalance();
+                        case 0 -> exitApplication();
+                        default -> System.out.println("Invalid option. Please try again.");
+                    }
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Invalid input. Please enter a valid number.");
@@ -56,24 +91,107 @@ public class ShopApplication {
         }
     }
 
+    private void updateProduct() {
+        int productId = getIntInput("Enter Product ID to update: ");
+        String name = getStringInput("Enter new product name (leave blank to skip): ");
+        String description = getStringInput("Enter new product description (leave blank to skip): ");
+        String priceInput = getStringInput("Enter new product price (leave blank to skip): ");
+        String quantityInput = getStringInput("Enter new product quantity (leave blank to skip): ");
+        String category = getStringInput("Enter new product category (leave blank to skip): ");
+
+        try {
+            StringBuilder query = new StringBuilder("UPDATE products SET ");
+            boolean hasUpdates = false;
+
+            if (!name.isEmpty()) {
+                query.append("name = ?, ");
+                hasUpdates = true;
+            }
+            if (!description.isEmpty()) {
+                query.append("description = ?, ");
+                hasUpdates = true;
+            }
+            if (!priceInput.isEmpty()) {
+                query.append("price = ?, ");
+                hasUpdates = true;
+            }
+            if (!quantityInput.isEmpty()) {
+                query.append("quantity = ?, ");
+                hasUpdates = true;
+            }
+            if (!category.isEmpty()) {
+                query.append("category = ?, ");
+                hasUpdates = true;
+            }
+
+            if (!hasUpdates) {
+                System.out.println("No updates provided.");
+                return;
+            }
+
+            // Убираем последнюю запятую и пробел
+            query.delete(query.length() - 2, query.length());
+            query.append(" WHERE id = ?");
+
+            PreparedStatement stmt = connection.prepareStatement(query.toString());
+            int paramIndex = 1;
+
+            if (!name.isEmpty()) {
+                stmt.setString(paramIndex++, name);
+            }
+            if (!description.isEmpty()) {
+                stmt.setString(paramIndex++, description);
+            }
+            if (!priceInput.isEmpty()) {
+                stmt.setDouble(paramIndex++, Double.parseDouble(priceInput));
+            }
+            if (!quantityInput.isEmpty()) {
+                stmt.setInt(paramIndex++, Integer.parseInt(quantityInput));
+            }
+            if (!category.isEmpty()) {
+                stmt.setString(paramIndex++, category);
+            }
+
+            stmt.setInt(paramIndex, productId);
+
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Product updated successfully.");
+            } else {
+                System.out.println("Product not found or no changes made.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error updating product: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Invalid input for price or quantity.");
+        }
+    }
+
+
     private void mainMenu() {
         System.out.println("\n--- Welcome to the Electronics Store ---");
-        System.out.println("1. View All Products");
-        System.out.println("2. View Product Details");
-        System.out.println("3. Register User");
-        System.out.println("4. Login User");
-        System.out.println("5. Create Order");
-        System.out.println("6. View Cart");
-        System.out.println("7. Add to Cart");
-        System.out.println("8. Remove from Cart");
-        System.out.println("9. Check Balance");
-        System.out.println("10. Add New Product");
-        System.out.println("11. Filter Products by Category");
-        System.out.println("12. Filter Products by Price Range");
-        System.out.println("13. Sort Products by Price (Ascending)");
-        System.out.println("14. Sort Products by Price (Descending)");
-        System.out.println("15. Top Up Balance");
-        System.out.println("0. Exit");
+        if ("admin".equals(loggedInUserRole)) {
+            // Меню для администратора
+            System.out.println("1. Add New Product");
+            System.out.println("2. Delete Product");
+            System.out.println("3. Update Product");
+            System.out.println("0. Exit");
+        } else {
+            // Меню для пользователя
+            System.out.println("1. View All Products");
+            System.out.println("2. View Product Details");
+            System.out.println("3. Create Order");
+            System.out.println("4. View Cart");
+            System.out.println("5. Add to Cart");
+            System.out.println("6. Remove from Cart");
+            System.out.println("7. Check Balance");
+            System.out.println("8. Filter Products by Category");
+            System.out.println("9. Filter Products by Price Range");
+            System.out.println("10. Sort Products by Price (Ascending)");
+            System.out.println("11. Sort Products by Price (Descending)");
+            System.out.println("12. Top Up Balance");
+            System.out.println("0. Exit");
+        }
         System.out.print("Select an option: ");
     }
 
@@ -113,14 +231,18 @@ public class ShopApplication {
         String email = getStringInput("Enter email: ");
         String password = getStringInput("Enter password: ");
         double balance = getDoubleInput("Enter balance: ");
-        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO users (name, email, password, balance) VALUES (?, ?, ?, ?)")) {
+        String role = getStringInput("Enter role (admin/user): ");
+
+        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO users (name, email, password, balance, role) VALUES (?, ?, ?, ?, ?)")) {
             stmt.setString(1, name);
             stmt.setString(2, email);
             stmt.setString(3, password);
             stmt.setDouble(4, balance);
+            stmt.setString(5, role);
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
                 System.out.println("User created successfully.");
+                loggedInUserRole = role; // Автоматически входим после регистрации
             } else {
                 System.out.println("Error creating user.");
             }
@@ -128,6 +250,8 @@ public class ShopApplication {
             System.out.println("Error creating user: " + e.getMessage());
         }
     }
+
+    private String loggedInUserRole = null;
 
     private void loginUser() {
         String email = getStringInput("Enter email: ");
@@ -137,7 +261,8 @@ public class ShopApplication {
             stmt.setString(2, password);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
-                System.out.println("Login successful. Welcome, " + rs.getString("name"));
+                loggedInUserRole = rs.getString("role");
+                System.out.println("Login successful. Welcome, " + rs.getString("name") + " (" + loggedInUserRole + ")");
             } else {
                 System.out.println("Invalid email or password.");
             }
@@ -386,6 +511,82 @@ public class ShopApplication {
             }
         } catch (SQLException e) {
             System.out.println("Error sorting products ascending: " + e.getMessage());
+        }
+    }
+
+    private void manageUsers() {
+        if (!"admin".equals(loggedInUserRole)) {
+            System.out.println("Access denied. Only admin can manage users.");
+            return;
+        }
+
+        System.out.println("1. View All Users");
+        System.out.println("2. Delete User");
+        int option = getIntInput("Select an option: ");
+
+        switch (option) {
+            case 1 -> viewAllUsers();
+            case 2 -> deleteUser();
+            default -> System.out.println("Invalid option.");
+        }
+    }
+
+    private void viewAllUsers() {
+        try (Statement stmt = connection.createStatement()) {
+            ResultSet rs = stmt.executeQuery("SELECT * FROM users");
+            System.out.println("All Users:");
+            while (rs.next()) {
+                System.out.println("ID: " + rs.getInt("id") + ", Name: " + rs.getString("name") + ", Email: " + rs.getString("email") + ", Role: " + rs.getString("role"));
+            }
+        } catch (SQLException e) {
+            System.out.println("Error fetching users: " + e.getMessage());
+        }
+    }
+
+    private void deleteUser() {
+        int userId = getIntInput("Enter User ID to delete: ");
+        try (PreparedStatement stmt = connection.prepareStatement("DELETE FROM users WHERE id = ?")) {
+            stmt.setInt(1, userId);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("User deleted successfully.");
+            } else {
+                System.out.println("Error deleting user.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error deleting user: " + e.getMessage());
+        }
+    }
+
+    private void manageProducts() {
+        if (!"admin".equals(loggedInUserRole)) {
+            System.out.println("Access denied. Only admin can manage products.");
+            return;
+        }
+
+        System.out.println("1. View All Products");
+        System.out.println("2. Delete Product");
+        int option = getIntInput("Select an option: ");
+
+        switch (option) {
+            case 1 -> viewAllProducts();
+            case 2 -> deleteProduct();
+            default -> System.out.println("Invalid option.");
+        }
+    }
+
+    private void deleteProduct() {
+        int productId = getIntInput("Enter Product ID to delete: ");
+        try (PreparedStatement stmt = connection.prepareStatement("DELETE FROM products WHERE id = ?")) {
+            stmt.setInt(1, productId);
+            int rowsAffected = stmt.executeUpdate();
+            if (rowsAffected > 0) {
+                System.out.println("Product deleted successfully.");
+            } else {
+                System.out.println("Error deleting product.");
+            }
+        } catch (SQLException e) {
+            System.out.println("Error deleting product: " + e.getMessage());
         }
     }
 
