@@ -8,4 +8,6 @@ public interface IOrderRepository {
     Order getOrderById(int id);
     List<Order> getAllOrders();
     List<Order> getOrdersByUserId(int userId);
+
+    String getOrderDetailsById(int orderId);
 }

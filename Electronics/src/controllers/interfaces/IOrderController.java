@@ -5,4 +5,6 @@ public interface IOrderController {
     String getOrderById(int id);
     String getAllOrders();
     String getUserOrders(int userId);
+
+    String getOrderDetailsById(int orderId);
 }

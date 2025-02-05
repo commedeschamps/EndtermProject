@@ -19,7 +19,7 @@ public class OrderController implements IOrderController {
     @Override
     public String createOrder(int userId, double totalAmount) {
         LocalDateTime orderDateTime = LocalDateTime.now();
-        Date orderDate = Date.valueOf(orderDateTime.toLocalDate());  
+        Date orderDate = Date.valueOf(orderDateTime.toLocalDate());
 
         String shippingAddress = "123 Shipping St.";
         String billingAddress = "123 Billing St.";
@@ -60,4 +60,9 @@ public class OrderController implements IOrderController {
                 .map(Order::toString)
                 .collect(Collectors.joining("\n"));
     }
+    @Override
+    public String getOrderDetailsById(int orderId) {
+        return repo.getOrderDetailsById(orderId);
+    }
+
 }

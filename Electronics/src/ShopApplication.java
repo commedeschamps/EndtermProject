@@ -18,11 +18,11 @@ public class ShopApplication {
         this.productController = productController;
         this.orderController = orderController;
         this.cartController = cartController;
-        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5433/electronics_shop", "postgres", "1111");
+        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "1234");
     }
 
     public void start() {
-        // Сначала предлагаем зарегистрироваться или войти
+        //  предлагаем зарегистрироваться или войти
         while (loggedInUserRole == null) {
             System.out.println("\n--- Welcome to the Electronics Store ---");
             System.out.println("1. Register");
@@ -47,23 +47,22 @@ public class ShopApplication {
             }
         }
 
-        // После успешного входа отображаем меню в зависимости от роли
         while (true) {
             mainMenu();
             try {
                 int option = scanner.nextInt();
                 scanner.nextLine();
                 if ("admin".equals(loggedInUserRole)) {
-                    // Действия для администратора
                     switch (option) {
                         case 1 -> addProduct();
                         case 2 -> deleteProduct();
                         case 3 -> updateProduct();
+                        case 4 -> viewOrderDetails(); // New method
                         case 0 -> exitApplication();
                         default -> System.out.println("Invalid option. Please try again.");
                     }
                 } else {
-                    // Действия для пользователя
+                    //  для пользователя
                     switch (option) {
                         case 1 -> viewAllProducts();
                         case 2 -> viewProductDetails();
@@ -171,10 +170,10 @@ public class ShopApplication {
     private void mainMenu() {
         System.out.println("\n--- Welcome to the Electronics Store ---");
         if ("admin".equals(loggedInUserRole)) {
-            // Меню для администратора
             System.out.println("1. Add New Product");
             System.out.println("2. Delete Product");
             System.out.println("3. Update Product");
+            System.out.println("4. View Full Order Details by Order ID"); // New option
             System.out.println("0. Exit");
         } else {
             // Меню для пользователя
@@ -293,7 +292,7 @@ public class ShopApplication {
 
         double totalPrice = productPrice * quantity;
 
-        Timestamp orderDate = new Timestamp(System.currentTimeMillis()); 
+        Timestamp orderDate = new Timestamp(System.currentTimeMillis());
 
         String deliveryMethod = getStringInput("Enter delivery method (Pickup, Intercity delivery, delivery in the city): ");
         String paymentMethod = getStringInput("Enter payment method (Cash, Credit Card, PayPal): ");
@@ -323,11 +322,11 @@ public class ShopApplication {
                     stmt.setInt(1, userId);
                     stmt.setInt(2, productId);
                     stmt.setInt(3, quantity);
-                    stmt.setDouble(4, totalPrice); 
-                    stmt.setTimestamp(5, orderDate); 
-                    stmt.setString(6, status); 
-                    stmt.setString(7, deliveryMethod); 
-                    stmt.setString(8, paymentMethod); 
+                    stmt.setDouble(4, totalPrice);
+                    stmt.setTimestamp(5, orderDate);
+                    stmt.setString(6, status);
+                    stmt.setString(7, deliveryMethod);
+                    stmt.setString(8, paymentMethod);
 
                     int rowsAffected = stmt.executeUpdate();
                     if (rowsAffected > 0) {
@@ -658,4 +657,10 @@ public class ShopApplication {
         }
         System.exit(0);
     }
+    private void viewOrderDetails() {
+        int orderId = getIntInput("Enter Order ID to view full details: ");
+        String result = orderController.getOrderDetailsById(orderId);
+        System.out.println(result);
+    }
+
 }
