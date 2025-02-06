@@ -22,7 +22,7 @@ public class ShopApplication {
     }
 
     public void start() {
-        //  предлагаем зарегистрироваться или войти
+        // Сначала предлагаем зарегистрироваться или войти
         while (loggedInUserRole == null) {
             System.out.println("\n--- Welcome to the Electronics Store ---");
             System.out.println("1. Register");
@@ -47,6 +47,7 @@ public class ShopApplication {
             }
         }
 
+        // После успешного входа отображаем меню в зависимости от роли
         while (true) {
             mainMenu();
             try {
@@ -62,7 +63,7 @@ public class ShopApplication {
                         default -> System.out.println("Invalid option. Please try again.");
                     }
                 } else {
-                    //  для пользователя
+                    // Действия для пользователя
                     switch (option) {
                         case 1 -> viewAllProducts();
                         case 2 -> viewProductDetails();
