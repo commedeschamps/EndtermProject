@@ -18,8 +18,9 @@ public class ShopApplication {
         this.productController = productController;
         this.orderController = orderController;
         this.cartController = cartController;
-        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "1234");
+        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "4444");
     }
+
 
     public void start() {
         while (loggedInUserRole == null) {
@@ -249,17 +250,22 @@ public class ShopApplication {
         }
     }
 
-    private String loggedInUserRole = null;
+    private int loggedInUserId = 0; // Глобальная переменная для хранения ID вошедшего пользователя
+    private String loggedInUserRole = null; // Для хранения роли пользователя
 
     private void loginUser() {
         String email = getStringInput("Enter email: ");
         String password = getStringInput("Enter password: ");
-        try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM users WHERE email = ? AND password = ?")) {
+
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "SELECT id, name, role FROM users WHERE email = ? AND password = ?")) {
             stmt.setString(1, email);
             stmt.setString(2, password);
             ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
-                loggedInUserRole = rs.getString("role");
+                loggedInUserId = rs.getInt("id");  // Сохраняем userId
+                loggedInUserRole = rs.getString("role"); // Сохраняем роль
                 System.out.println("Login successful. Welcome, " + rs.getString("name") + " (" + loggedInUserRole + ")");
             } else {
                 System.out.println("Invalid email or password.");
@@ -269,10 +275,10 @@ public class ShopApplication {
         }
     }
 
+
     private void createOrder() {
         int productId = getIntInput("Enter Product ID: ");
         int quantity = getIntInput("Enter Quantity: ");
-        int userId = getIntInput("Enter User ID: ");
 
         double productPrice = 0;
         try (PreparedStatement priceStmt = connection.prepareStatement("SELECT price FROM products WHERE id = ?")) {
@@ -290,20 +296,16 @@ public class ShopApplication {
         }
 
         double totalPrice = productPrice * quantity;
-
         Timestamp orderDate = new Timestamp(System.currentTimeMillis());
-
         String deliveryMethod = getStringInput("Enter delivery method (Pickup, Intercity delivery, delivery in the city): ");
         String paymentMethod = getStringInput("Enter payment method (Cash, Credit Card, PayPal): ");
-
         String status = "Pending";
-
         String issueOrder = getStringInput("Issue it? (Yes/No): ");
 
         if (issueOrder.equalsIgnoreCase("Yes")) {
             double userBalance = 0;
             try (PreparedStatement balanceStmt = connection.prepareStatement("SELECT balance FROM users WHERE id = ?")) {
-                balanceStmt.setInt(1, userId);
+                balanceStmt.setInt(1, loggedInUserId);
                 ResultSet rs = balanceStmt.executeQuery();
                 if (rs.next()) {
                     userBalance = rs.getDouble("balance");
@@ -318,7 +320,7 @@ public class ShopApplication {
 
             if (userBalance >= totalPrice) {
                 try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO orders (user_id, product_id, quantity, total_amount, order_date, status, delivery_method, payment_method) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")) {
-                    stmt.setInt(1, userId);
+                    stmt.setInt(1, loggedInUserId);
                     stmt.setInt(2, productId);
                     stmt.setInt(3, quantity);
                     stmt.setDouble(4, totalPrice);
@@ -333,15 +335,13 @@ public class ShopApplication {
 
                         try (PreparedStatement updateBalanceStmt = connection.prepareStatement("UPDATE users SET balance = balance - ? WHERE id = ?")) {
                             updateBalanceStmt.setDouble(1, totalPrice);
-                            updateBalanceStmt.setInt(2, userId);
+                            updateBalanceStmt.setInt(2, loggedInUserId);
                             int balanceUpdated = updateBalanceStmt.executeUpdate();
                             if (balanceUpdated > 0) {
                                 System.out.println("Amount successfully deducted from balance.");
                             } else {
                                 System.out.println("Error updating balance.");
                             }
-                        } catch (SQLException e) {
-                            System.out.println("Error updating balance: " + e.getMessage());
                         }
                     } else {
                         System.out.println("Error creating order.");
@@ -357,15 +357,9 @@ public class ShopApplication {
         }
     }
 
-
-
-
-
-
     private void viewCart() {
-        int userId = getIntInput("Enter User ID to view cart: ");
         try (PreparedStatement stmt = connection.prepareStatement("SELECT * FROM cart WHERE user_id = ?")) {
-            stmt.setInt(1, userId);
+            stmt.setInt(1, loggedInUserId);
             ResultSet rs = stmt.executeQuery();
             double totalCost = 0;
 
@@ -384,8 +378,6 @@ public class ShopApplication {
                     } else {
                         System.out.println("Product with ID " + productId + " not found in products table.");
                     }
-                } catch (SQLException e) {
-                    System.out.println("Error fetching product price: " + e.getMessage());
                 }
             }
 
@@ -396,16 +388,41 @@ public class ShopApplication {
     }
 
 
+
     private void addToCart() {
-        int userId = getIntInput("Enter User ID: ");
+        if (loggedInUserId == 0) {
+            System.out.println("User is not logged in. Please log in first.");
+            return;
+        }
+
         int productId = getIntInput("Enter Product ID: ");
         int quantity = getIntInput("Enter Quantity: ");
-        double price = getDoubleInput("Enter Price: ");
-        try (PreparedStatement stmt = connection.prepareStatement("INSERT INTO cart (user_id, product_id, quantity, price) VALUES (?, ?, ?, ?)")) {
-            stmt.setInt(1, userId);
+        double price = 0.0;
+
+        // Получение цены товара из базы данных
+        try (PreparedStatement priceStmt = connection.prepareStatement("SELECT price FROM products WHERE id = ?")) {
+            priceStmt.setInt(1, productId);
+            try (ResultSet rs = priceStmt.executeQuery()) {
+                if (rs.next()) {
+                    price = rs.getDouble("price");
+                } else {
+                    System.out.println("Product not found.");
+                    return;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Error retrieving product price: " + e.getMessage());
+            return;
+        }
+
+        // Добавление товара в корзину
+        try (PreparedStatement stmt = connection.prepareStatement(
+                "INSERT INTO cart (user_id, product_id, quantity, price) VALUES (?, ?, ?, ?)")) {
+            stmt.setInt(1, loggedInUserId);
             stmt.setInt(2, productId);
             stmt.setInt(3, quantity);
             stmt.setDouble(4, price);
+
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
                 System.out.println("Item added to cart.");
@@ -417,11 +434,12 @@ public class ShopApplication {
         }
     }
 
+
+
     private void removeFromCart() {
-        int userId = getIntInput("Enter User ID: ");
         int productId = getIntInput("Enter Product ID to remove: ");
         try (PreparedStatement stmt = connection.prepareStatement("DELETE FROM cart WHERE user_id = ? AND product_id = ?")) {
-            stmt.setInt(1, userId);
+            stmt.setInt(1, loggedInUserId);
             stmt.setInt(2, productId);
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
@@ -435,9 +453,8 @@ public class ShopApplication {
     }
 
     private void checkBalance() {
-        int userId = getIntInput("Enter User ID to check balance: ");
         try (PreparedStatement stmt = connection.prepareStatement("SELECT balance FROM users WHERE id = ?")) {
-            stmt.setInt(1, userId);
+            stmt.setInt(1, loggedInUserId);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 System.out.println("User balance: " + rs.getDouble("balance"));
