@@ -16,37 +16,26 @@ public class ProductController implements IProductController {
 
     @Override
     public String createProduct(String name, String description, double price, int quantity, String category) {
-        if (name == null || name.isEmpty() || description == null || description.isEmpty() || price <= 0 || quantity < 0 || category == null || category.isEmpty()) {
+        if (List.of(name, description, category).stream().anyMatch(s -> s == null || s.isEmpty()) || price <= 0 || quantity < 0) {
             return "Invalid input values. Please check the data and try again.";
         }
 
-        Product product = new Product(0, name, description, price, quantity, category); // ✅ Fix: Provide default ID (0)
-        boolean created = repo.createProduct(product);
-
-        return created ? "Product was created successfully." : "Product creation failed. Please try again.";
+        Product product = new Product(0, name, description, price, quantity, category);
+        return repo.createProduct(product) ? "Product was created successfully." : "Product creation failed. Please try again.";
     }
-
 
     @Override
     public String getProductById(int id) {
-        if (id <= 0) {
-            return "Invalid product ID.";
-        }
-
-        Product product = repo.getProductById(id);
-        return (product == null) ? "Product not found." : product.toString();
+        return (id <= 0) ? "Invalid product ID." :
+                repo.getProductById(id) != null ? repo.getProductById(id).toString() : "Product not found.";
     }
 
     @Override
     public String getAllProducts() {
-        List<Product> products = repo.getAllProducts();
-        if (products == null || products.isEmpty()) {
-            return "No products available.";
-        }
-
-        return products.stream()
+        return repo.getAllProducts().stream()
                 .map(Product::toString)
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
+                        result -> result.isEmpty() ? "No products available." : result));
     }
 
     @Override
@@ -55,17 +44,11 @@ public class ProductController implements IProductController {
             return "Invalid category input.";
         }
 
-        List<Product> products = repo.getAllProducts().stream()
+        return repo.getAllProducts().stream()
                 .filter(p -> p.getCategory().equalsIgnoreCase(category))
-                .collect(Collectors.toList());
-
-        if (products.isEmpty()) {
-            return "No products found in this category.";
-        }
-
-        return products.stream()
                 .map(Product::toString)
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
+                        result -> result.isEmpty() ? "No products found in this category." : result));
     }
 
     @Override
@@ -74,38 +57,28 @@ public class ProductController implements IProductController {
             return "Invalid price range.";
         }
 
-        List<Product> products = repo.getAllProducts().stream()
+        return repo.getAllProducts().stream()
                 .filter(p -> p.getPrice() >= minPrice && p.getPrice() <= maxPrice)
-                .collect(Collectors.toList());
-
-        if (products.isEmpty()) {
-            return "No products found in this price range.";
-        }
-
-        return products.stream()
                 .map(Product::toString)
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
+                        result -> result.isEmpty() ? "No products found in this price range." : result));
     }
 
     @Override
     public String sortProductsByPriceAscending() {
-        List<Product> products = repo.getAllProducts().stream()
+        return repo.getAllProducts().stream()
                 .sorted((p1, p2) -> Double.compare(p1.getPrice(), p2.getPrice()))
-                .collect(Collectors.toList());
-
-        return products.isEmpty() ? "No products available." : products.stream()
                 .map(Product::toString)
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
+                        result -> result.isEmpty() ? "No products available." : result));
     }
 
     @Override
     public String sortProductsByPriceDescending() {
-        List<Product> products = repo.getAllProducts().stream()
+        return repo.getAllProducts().stream()
                 .sorted((p1, p2) -> Double.compare(p2.getPrice(), p1.getPrice()))
-                .collect(Collectors.toList());
-
-        return products.isEmpty() ? "No products available." : products.stream()
                 .map(Product::toString)
-                .collect(Collectors.joining("\n"));
+                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
+                        result -> result.isEmpty() ? "No products available." : result));
     }
 }
