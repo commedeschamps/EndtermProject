@@ -5,6 +5,7 @@ import models.User;
 import repositories.interfaces.IUserRepository;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class UserController implements IUserController {
     private final IUserRepository repo;
@@ -15,38 +16,25 @@ public class UserController implements IUserController {
 
     @Override
     public String createUser(String name, String surname, String gender) {
-        if (name == null || name.isEmpty() || surname == null || surname.isEmpty() || gender == null || gender.isEmpty()) {
+        if (List.of(name, surname, gender).stream().anyMatch(s -> s == null || s.isEmpty())) {
             return "Invalid input. Please provide valid name, surname, and gender.";
         }
 
-        boolean male = gender.equalsIgnoreCase("male");
-        User user = new User(name, surname, male);
-        boolean created = repo.createUser(user);
-
-        return created ? "User was created successfully." : "User creation failed. Please try again.";
+        User user = new User(name, surname, gender.equalsIgnoreCase("male"));
+        return repo.createUser(user) ? "User was created successfully." : "User creation failed. Please try again.";
     }
 
     @Override
     public String getUserById(int id) {
-        if (id <= 0) {
-            return "Invalid user ID.";
-        }
-
-        User user = repo.getUserById(id);
-        return user == null ? "User not found." : user.toString();
+        return (id <= 0) ? "Invalid user ID." :
+                repo.getUserById(id) != null ? repo.getUserById(id).toString() : "User not found.";
     }
 
     @Override
     public String getAllUsers() {
-        List<User> users = repo.getAllUsers();
-        if (users == null || users.isEmpty()) {
-            return "No users available.";
-        }
-
-        StringBuilder response = new StringBuilder();
-        for (User user : users) {
-            response.append(user.toString()).append("\n");
-        }
-        return response.toString();
+        return repo.getAllUsers().stream()
+                .map(User::toString)
+                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
+                        result -> result.isEmpty() ? "No users available." : result));
     }
 }
