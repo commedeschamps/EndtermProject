@@ -18,7 +18,7 @@ public class ShopApplication {
         this.productController = productController;
         this.orderController = orderController;
         this.cartController = cartController;
-        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5433/electronics_shop", "postgres", "1111");
+        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5433/electronics_shop", "postgres", "1111"); //свой пароль
     }
 
     public void start() {

@@ -17,7 +17,7 @@ public class User {
         this.balance = balance;
         this.role = role;
     }
-
+//test
     public String getName() {
         return this.name;
     }

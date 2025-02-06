@@ -62,7 +62,7 @@ public class PostgresDB implements IDB {
                 this.connection.close();
             } catch (SQLException e) {
                 System.out.println("Failed to close connection" + e.getMessage());
-            }
+            } //hello
         }
     }
 }
