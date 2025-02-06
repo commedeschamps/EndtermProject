@@ -20,11 +20,12 @@ public class ProductController implements IProductController {
             return "Invalid input values. Please check the data and try again.";
         }
 
-        Product product = new Product(name, description, price, quantity, category);
+        Product product = new Product(0, name, description, price, quantity, category); // ✅ Fix: Provide default ID (0)
         boolean created = repo.createProduct(product);
 
         return created ? "Product was created successfully." : "Product creation failed. Please try again.";
     }
+
 
     @Override
     public String getProductById(int id) {

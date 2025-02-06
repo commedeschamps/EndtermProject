@@ -4,13 +4,15 @@ import data.PostgresDB;
 import data.interfaceces.IDB;
 import repositories.*;
 import repositories.interfaces.*;
+import services.OrderService;
+import strategy.DiscountPricing;
+import strategy.StandardPricing;
 
 import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) throws SQLException {
-        IDB db = new PostgresDB("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "1234");
-
+        IDB db = PostgresDB.getInstance();
         IUserRepository userRepository = new UserRepository(db);
         IProductRepository productRepository = new ProductRepository(db);
         IOrderRepository orderRepository = new OrderRepository(db);
@@ -21,6 +23,9 @@ public class Main {
         IOrderController orderController = new OrderController(orderRepository);
         ICartController cartController = new CartController(cartRepository);
 
+        OrderService orderService = new OrderService(new StandardPricing());
+
+        orderService.setPricingStrategy(new DiscountPricing());
         ShopApplication app = new ShopApplication(
                 userController,
                 productController,

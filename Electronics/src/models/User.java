@@ -9,6 +9,7 @@ public class User {
     private String password;
     private double balance;
 
+
     public User() {
     }
 
@@ -31,9 +32,16 @@ public class User {
     }
 
     public User(int id, String name, String surname, boolean gender, String email, String password, double balance) {
-        this(name, surname, gender, email, password, balance);
         this.id = id;
+        this.name = name;
+        this.surname = surname;
+        this.gender = gender;
+        this.email = email;
+        this.password = password;
+        this.balance = balance;
     }
+
+
 
     public int getId() {
         return id;

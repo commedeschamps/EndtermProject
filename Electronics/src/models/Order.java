@@ -37,6 +37,9 @@ public class Order {
         this.deliveryMethod = deliveryMethod;
     }
 
+    public Order(int arg, int arg1, List<Integer> arg2) {
+    }
+
     public int getId() {
         return id;
     }

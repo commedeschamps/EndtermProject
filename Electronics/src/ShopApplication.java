@@ -22,7 +22,6 @@ public class ShopApplication {
     }
 
     public void start() {
-        // Сначала предлагаем зарегистрироваться или войти
         while (loggedInUserRole == null) {
             System.out.println("\n--- Welcome to the Electronics Store ---");
             System.out.println("1. Register");
@@ -47,7 +46,6 @@ public class ShopApplication {
             }
         }
 
-        // После успешного входа отображаем меню в зависимости от роли
         while (true) {
             mainMenu();
             try {
@@ -63,7 +61,7 @@ public class ShopApplication {
                         default -> System.out.println("Invalid option. Please try again.");
                     }
                 } else {
-                    // Действия для пользователя
+                    //  для пользователя
                     switch (option) {
                         case 1 -> viewAllProducts();
                         case 2 -> viewProductDetails();
@@ -242,7 +240,7 @@ public class ShopApplication {
             int rowsAffected = stmt.executeUpdate();
             if (rowsAffected > 0) {
                 System.out.println("User created successfully.");
-                loggedInUserRole = role; // Автоматически входим после регистрации
+                loggedInUserRole = role;
             } else {
                 System.out.println("Error creating user.");
             }

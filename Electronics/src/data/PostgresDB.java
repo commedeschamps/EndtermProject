@@ -6,63 +6,41 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class PostgresDB implements IDB {
-    private String connectionUrl;
-    private String username;
-    private String password;
+    private static PostgresDB instance;
     private Connection connection;
+    private static final String URL = "jdbc:postgresql://localhost:5432/electronics_shop";
+    private static final String USER = "postgres";
+    private static final String PASSWORD = "1234";
 
-    public PostgresDB(String connectionUrl, String username, String password) {
-        this.setConnectionUrl(connectionUrl);
-        this.setUsername(username);
-        this.setPassword(password);
-    }
-
-    public String getConnectionUrl() {
-        return this.connectionUrl;
-    }
-
-    public void setConnectionUrl(String connectionUrl) {
-        this.connectionUrl = connectionUrl;
-    }
-
-    public String getUsername() {
-        return this.username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return this.password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Connection getConnection() {
+    private PostgresDB() {
         try {
-            if (this.connection != null && !this.connection.isClosed()) {
-                return this.connection;
-            } else {
-                Class.forName("org.postgresql.Driver");
-                this.connection = DriverManager.getConnection(connectionUrl, this.username, this.password);
-                return this.connection;
-            }
-        } catch (Exception e) {
-            System.out.println("Failed to connect to database: " + e.getMessage());
-            return null;
+            this.connection = DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (SQLException e) {
+            throw new RuntimeException("Database connection error", e);
         }
     }
 
+    public static synchronized PostgresDB getInstance() {
+        if (instance == null) {
+            instance = new PostgresDB();
+        }
+        return instance;
+    }
+
+    @Override
+    public Connection getConnection() {
+        return connection;
+    }
+
+    @Override
     public void close() {
-        if (this.connection != null) {
-            try {
-                this.connection.close();
-            } catch (SQLException e) {
-                System.out.println("Failed to close connection" + e.getMessage());
+        try {
+            if (connection != null && !connection.isClosed()) {
+                connection.close();
+                System.out.println("Database connection closed.");
             }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error closing database connection", e);
         }
     }
 }
