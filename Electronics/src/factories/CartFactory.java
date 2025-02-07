@@ -15,9 +15,9 @@ public class CartFactory implements Factory<Cart> {
     @Override
     public Cart create(Object... args) {
         if (args.length == 1 && args[0] instanceof Integer) {
-            return new Cart((int) args[0]); // Matches constructor Cart(int)
+            return new Cart((int) args[0]);
         } else if (args.length == 0) {
-            return new Cart(); // Matches constructor Cart()
+            return new Cart();
         } else {
             throw new IllegalArgumentException("Invalid arguments for Cart creation");
         }
