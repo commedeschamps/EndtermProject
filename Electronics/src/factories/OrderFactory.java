@@ -10,9 +10,9 @@ public class OrderFactory implements Factory<Order> {
             throw new IllegalArgumentException("Invalid arguments for Order creation");
         }
         return new Order(
-                (int) args[0],       // order id
-                (int) args[1],       // user id
-                (List<Integer>) args[2] // list of product IDs
+                (int) args[0],       
+                (int) args[1],       
+                (List<Integer>) args[2]
         );
     }
 }
