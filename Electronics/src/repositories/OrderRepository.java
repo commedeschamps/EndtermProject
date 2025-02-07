@@ -7,6 +7,7 @@ import repositories.interfaces.IOrderRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class OrderRepository implements IOrderRepository {
@@ -18,6 +19,15 @@ public class OrderRepository implements IOrderRepository {
 
     @Override
     public boolean createOrder(Order order) {
+        if (order == null) {
+            System.out.println("Invalid input: Order cannot be null.");
+            return false;
+        }
+        if (order.getUserId() <= 0 || order.getTotalAmount() <= 0) {
+            System.out.println("Invalid input: User ID and Total Amount must be positive.");
+            return false;
+        }
+
         String sql = "INSERT INTO orders(user_id, order_date, total_amount, status, delivery_method, payment_method) VALUES (?, ?, ?, ?, ?, ?)";
         try (Connection connection = db.getConnection();
              PreparedStatement st = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
@@ -37,7 +47,6 @@ public class OrderRepository implements IOrderRepository {
                         for (OrderItem item : order.getOrderItems()) {
                             addOrderItem(orderId, item);
                         }
-
                         return true;
                     }
                 }
@@ -49,6 +58,11 @@ public class OrderRepository implements IOrderRepository {
     }
 
     private void addOrderItem(int orderId, OrderItem item) {
+        if (orderId <= 0 || item.getProductId() <= 0 || item.getQuantity() <= 0 || item.getPrice() < 0) {
+            System.out.println("Invalid order item details.");
+            return;
+        }
+
         String sql = "INSERT INTO order_items(order_id, product_id, quantity, price) VALUES (?, ?, ?, ?)";
         try (Connection connection = db.getConnection();
              PreparedStatement st = connection.prepareStatement(sql)) {
@@ -63,27 +77,27 @@ public class OrderRepository implements IOrderRepository {
         }
     }
 
-
     @Override
     public Order getOrderById(int id) {
+        if (id <= 0) {
+            System.out.println("Invalid input: Order ID must be positive.");
+            return null;
+        }
+
         String sql = "SELECT * FROM orders WHERE id = ?";
         try (Connection connection = db.getConnection();
              PreparedStatement st = connection.prepareStatement(sql)) {
 
             st.setInt(1, id);
+            ResultSet rs = st.executeQuery();
 
-            try (ResultSet rs = st.executeQuery()) {
-                if (rs.next()) {
-                    java.sql.Date sqlDate = rs.getDate("order_date");
-                    java.util.Date orderDate = new java.util.Date(sqlDate.getTime());
-
-                    return new Order(
-                            rs.getInt("id"),
-                            rs.getInt("user_id"),
-                            orderDate,
-                            rs.getDouble("total_amount")
-                    );
-                }
+            if (rs.next()) {
+                return new Order(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        new Date(rs.getTimestamp("order_date").getTime()),
+                        rs.getDouble("total_amount")
+                );
             }
         } catch (SQLException e) {
             System.out.println("SQL error while retrieving order by ID: " + e.getMessage());
@@ -100,54 +114,56 @@ public class OrderRepository implements IOrderRepository {
              ResultSet rs = st.executeQuery(sql)) {
 
             while (rs.next()) {
-                java.sql.Date sqlDate = rs.getDate("order_date");
-                java.util.Date orderDate = new java.util.Date(sqlDate.getTime());
-
                 orders.add(new Order(
                         rs.getInt("id"),
                         rs.getInt("user_id"),
-                        orderDate,
+                        new Date(rs.getTimestamp("order_date").getTime()),
                         rs.getDouble("total_amount")
                 ));
             }
-            return orders;
+            return orders.isEmpty() ? Collections.emptyList() : orders;
         } catch (SQLException e) {
             System.out.println("SQL error while retrieving all orders: " + e.getMessage());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public List<Order> getOrdersByUserId(int userId) {
+        if (userId <= 0) {
+            System.out.println("Invalid input: User ID must be positive.");
+            return Collections.emptyList();
+        }
+
         String sql = "SELECT * FROM orders WHERE user_id = ?";
         List<Order> orders = new ArrayList<>();
         try (Connection connection = db.getConnection();
              PreparedStatement st = connection.prepareStatement(sql)) {
 
             st.setInt(1, userId);
+            ResultSet rs = st.executeQuery();
 
-            try (ResultSet rs = st.executeQuery()) {
-                while (rs.next()) {
-                    java.sql.Date sqlDate = rs.getDate("order_date");
-                    java.util.Date orderDate = new java.util.Date(sqlDate.getTime());
-
-                    orders.add(new Order(
-                            rs.getInt("id"),
-                            rs.getInt("user_id"),
-                            orderDate,
-                            rs.getDouble("total_amount")
-                    ));
-                }
+            while (rs.next()) {
+                orders.add(new Order(
+                        rs.getInt("id"),
+                        rs.getInt("user_id"),
+                        new Date(rs.getTimestamp("order_date").getTime()),
+                        rs.getDouble("total_amount")
+                ));
             }
-            return orders;
+            return orders.isEmpty() ? Collections.emptyList() : orders;
         } catch (SQLException e) {
             System.out.println("SQL error while retrieving orders by user ID: " + e.getMessage());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public String getOrderDetailsById(int orderId) {
+        if (orderId <= 0) {
+            return "Invalid input: Order ID must be positive.";
+        }
+
         String sql = """
         SELECT
             o.id AS order_id,
@@ -178,7 +194,6 @@ public class OrderRepository implements IOrderRepository {
             ResultSet rs = stmt.executeQuery();
 
             boolean orderFound = false;
-
             while (rs.next()) {
                 if (!orderFound) {
                     result.append("\nOrder Details:\n")
@@ -200,14 +215,9 @@ public class OrderRepository implements IOrderRepository {
                         .append("\n");
             }
 
-            if (!orderFound) {
-                return "Order with ID " + orderId + " not found.";
-            }
-
-            return result.toString();
+            return orderFound ? result.toString() : "Order with ID " + orderId + " not found.";
         } catch (SQLException e) {
             return "Error retrieving order details: " + e.getMessage();
         }
     }
-
 }
