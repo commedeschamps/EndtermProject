@@ -16,25 +16,40 @@ public class UserController implements IUserController {
 
     @Override
     public String createUser(String name, String surname, String gender) {
-        if (List.of(name, surname, gender).stream().anyMatch(s -> s == null || s.isEmpty())) {
-            return "Invalid input. Please provide valid name, surname, and gender.";
+        if (name == null || name.trim().isEmpty()) {
+            return "Invalid input: Name cannot be empty.";
+        }
+        if (surname == null || surname.trim().isEmpty()) {
+            return "Invalid input: Surname cannot be empty.";
+        }
+        if (gender == null || gender.trim().isEmpty() ||
+                !(gender.equalsIgnoreCase("male") || gender.equalsIgnoreCase("female"))) {
+            return "Invalid input: Gender must be 'male' or 'female'.";
         }
 
-        User user = new User(name, surname, gender.equalsIgnoreCase("male"));
+        User user = new User(name.trim(), surname.trim(), gender.equalsIgnoreCase("male"));
         return repo.createUser(user) ? "User was created successfully." : "User creation failed. Please try again.";
     }
 
     @Override
     public String getUserById(int id) {
-        return (id <= 0) ? "Invalid user ID." :
-                repo.getUserById(id) != null ? repo.getUserById(id).toString() : "User not found.";
+        if (id <= 0) {
+            return "Invalid user ID. It must be a positive number.";
+        }
+
+        User user = repo.getUserById(id);
+        return (user != null) ? user.toString() : "User not found.";
     }
 
     @Override
     public String getAllUsers() {
-        return repo.getAllUsers().stream()
+        List<User> users = repo.getAllUsers();
+        if (users == null || users.isEmpty()) {
+            return "No users available.";
+        }
+
+        return users.stream()
                 .map(User::toString)
-                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
-                        result -> result.isEmpty() ? "No users available." : result));
+                .collect(Collectors.joining("\n"));
     }
 }
