@@ -6,6 +6,7 @@ import repositories.interfaces.IUserRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class UserRepository implements IUserRepository {
@@ -17,158 +18,175 @@ public class UserRepository implements IUserRepository {
 
     @Override
     public boolean createUser(User user) {
-        Connection connection = null;
-        try {
-            connection = db.getConnection();
-            String sql = "INSERT INTO users(name, surname, gender, email, password, balance) VALUES (?, ?, ?, ?, ?, ?)";
-            PreparedStatement st = connection.prepareStatement(sql);
+        if (user == null) {
+            System.out.println("Invalid input: User cannot be null.");
+            return false;
+        }
+        if (user.getName() == null || user.getName().trim().isEmpty() ||
+                user.getSurname() == null || user.getSurname().trim().isEmpty() ||
+                user.getEmail() == null || user.getEmail().trim().isEmpty() ||
+                user.getPassword() == null || user.getPassword().trim().isEmpty()) {
+            System.out.println("Invalid input: Name, Surname, Email, and Password cannot be empty.");
+            return false;
+        }
+        if (user.getBalance() < 0) {
+            System.out.println("Invalid input: Balance cannot be negative.");
+            return false;
+        }
 
-            st.setString(1, user.getName());
-            st.setString(2, user.getSurname());
+        if (getUserByEmail(user.getEmail()) != null) {
+            System.out.println("Error: Email is already in use.");
+            return false;
+        }
+
+        String sql = "INSERT INTO users(name, surname, gender, email, password, balance) VALUES (?, ?, ?, ?, ?, ?)";
+        try (Connection connection = db.getConnection();
+             PreparedStatement st = connection.prepareStatement(sql)) {
+
+            st.setString(1, user.getName().trim());
+            st.setString(2, user.getSurname().trim());
             st.setBoolean(3, user.getGender());
-            st.setString(4, user.getEmail());
-            st.setString(5, user.getPassword());
+            st.setString(4, user.getEmail().trim());
+            st.setString(5, user.getPassword().trim());
             st.setDouble(6, user.getBalance());
 
-            st.execute();
-            return true;
+            return st.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
+            System.out.println("SQL error while creating user: " + e.getMessage());
         }
         return false;
     }
 
     @Override
     public User getUserById(int id) {
-        Connection connection = null;
-        try {
-            connection = db.getConnection();
-            String sql = "SELECT * FROM users WHERE id = ?";
-            PreparedStatement st = connection.prepareStatement(sql);
-            st.setInt(1, id);
+        if (id <= 0) {
+            System.out.println("Invalid input: User ID must be positive.");
+            return null;
+        }
 
+        String sql = "SELECT * FROM users WHERE id = ?";
+        try (Connection connection = db.getConnection();
+             PreparedStatement st = connection.prepareStatement(sql)) {
+
+            st.setInt(1, id);
             ResultSet rs = st.executeQuery();
+
             if (rs.next()) {
-                return new User(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("surname"),
-                        rs.getBoolean("gender"),
-                        rs.getString("email"),
-                        rs.getString("password"),
-                        rs.getDouble("balance")
-                );
+                return extractUserFromResultSet(rs);
             }
         } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
+            System.out.println("SQL error while retrieving user by ID: " + e.getMessage());
         }
         return null;
     }
 
     @Override
     public List<User> getAllUsers() {
-        Connection connection = null;
-        try {
-            connection = db.getConnection();
-            String sql = "SELECT * FROM users";
-            Statement st = connection.createStatement();
+        String sql = "SELECT * FROM users";
+        List<User> users = new ArrayList<>();
+        try (Connection connection = db.getConnection();
+             Statement st = connection.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
 
-            ResultSet rs = st.executeQuery(sql);
-            List<User> users = new ArrayList<>();
             while (rs.next()) {
-                User user = new User(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("surname"),
-                        rs.getBoolean("gender"),
-                        rs.getString("email"),
-                        rs.getString("password"),
-                        rs.getDouble("balance")
-                );
-                users.add(user);
+                users.add(extractUserFromResultSet(rs));
             }
-            return users;
+            return users.isEmpty() ? Collections.emptyList() : users;
         } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
+            System.out.println("SQL error while retrieving all users: " + e.getMessage());
         }
-        return null;
+        return Collections.emptyList();
     }
 
     @Override
     public boolean verifyUserCredentials(String email, String password) {
-        User user = getUserByEmailAndPassword(email, password);
-        return user != null;
+        if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            System.out.println("Invalid input: Email and Password cannot be empty.");
+            return false;
+        }
+
+        return getUserByEmailAndPassword(email, password) != null;
     }
 
     @Override
     public User getUserByEmail(String email) {
-        Connection connection = null;
-        try {
-            connection = db.getConnection();
-            String sql = "SELECT * FROM users WHERE email = ?";
-            PreparedStatement st = connection.prepareStatement(sql);
-            st.setString(1, email);
+        if (email == null || email.trim().isEmpty()) {
+            System.out.println("Invalid input: Email cannot be empty.");
+            return null;
+        }
 
+        String sql = "SELECT * FROM users WHERE email = ?";
+        try (Connection connection = db.getConnection();
+             PreparedStatement st = connection.prepareStatement(sql)) {
+
+            st.setString(1, email.trim());
             ResultSet rs = st.executeQuery();
+
             if (rs.next()) {
-                return new User(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("surname"),
-                        rs.getBoolean("gender"),
-                        rs.getString("email"),
-                        rs.getString("password"),
-                        rs.getDouble("balance")
-                );
+                return extractUserFromResultSet(rs);
             }
         } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
+            System.out.println("SQL error while retrieving user by email: " + e.getMessage());
         }
         return null;
     }
 
     public User getUserByEmailAndPassword(String email, String password) {
-        Connection connection = null;
-        try {
-            connection = db.getConnection();
-            String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
-            PreparedStatement st = connection.prepareStatement(sql);
-            st.setString(1, email);
-            st.setString(2, password);
+        if (email == null || email.trim().isEmpty() || password == null || password.trim().isEmpty()) {
+            System.out.println("Invalid input: Email and Password cannot be empty.");
+            return null;
+        }
 
+        String sql = "SELECT * FROM users WHERE email = ? AND password = ?";
+        try (Connection connection = db.getConnection();
+             PreparedStatement st = connection.prepareStatement(sql)) {
+
+            st.setString(1, email.trim());
+            st.setString(2, password.trim());
             ResultSet rs = st.executeQuery();
+
             if (rs.next()) {
-                return new User(
-                        rs.getInt("id"),
-                        rs.getString("name"),
-                        rs.getString("surname"),
-                        rs.getBoolean("gender"),
-                        rs.getString("email"),
-                        rs.getString("password"),
-                        rs.getDouble("balance")
-                );
+                return extractUserFromResultSet(rs);
             }
         } catch (SQLException e) {
-            System.out.println("SQL error: " + e.getMessage());
+            System.out.println("SQL error while verifying user credentials: " + e.getMessage());
         }
         return null;
     }
 
     public boolean updateUserBalance(int userId, double newBalance) {
-        Connection connection = null;
-        try {
-            connection = db.getConnection();
-            String sql = "UPDATE users SET balance = ? WHERE id = ?";
-            PreparedStatement st = connection.prepareStatement(sql);
+        if (userId <= 0) {
+            System.out.println("Invalid input: User ID must be positive.");
+            return false;
+        }
+        if (newBalance < 0) {
+            System.out.println("Invalid input: Balance cannot be negative.");
+            return false;
+        }
+
+        String sql = "UPDATE users SET balance = ? WHERE id = ?";
+        try (Connection connection = db.getConnection();
+             PreparedStatement st = connection.prepareStatement(sql)) {
 
             st.setDouble(1, newBalance);
             st.setInt(2, userId);
 
-            int rowsAffected = st.executeUpdate();
-            return rowsAffected > 0;
+            return st.executeUpdate() > 0;
         } catch (SQLException e) {
-            System.out.println("Error updating user balance: " + e.getMessage());
+            System.out.println("SQL error while updating user balance: " + e.getMessage());
         }
         return false;
+    }
+
+    private User extractUserFromResultSet(ResultSet rs) throws SQLException {
+        return new User(
+                rs.getInt("id"),
+                rs.getString("name"),
+                rs.getString("surname"),
+                rs.getBoolean("gender"),
+                rs.getString("email"),
+                rs.getString("password"),
+                rs.getDouble("balance")
+        );
     }
 }
