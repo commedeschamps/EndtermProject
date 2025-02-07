@@ -18,34 +18,63 @@ public class OrderController implements IOrderController {
 
     @Override
     public String createOrder(int userId, double totalAmount) {
-        Order newOrder = new Order(userId, totalAmount, Date.valueOf(LocalDateTime.now().toLocalDate()), "123 Shipping St.", "123 Billing St.");
+        if (userId <= 0) {
+            return "Invalid user ID. It must be a positive number.";
+        }
+        if (totalAmount <= 0) {
+            return "Invalid total amount. It must be a positive number.";
+        }
+
+        Order newOrder = new Order(userId, totalAmount, Date.valueOf(LocalDateTime.now().toLocalDate()),
+                "123 Shipping St.", "123 Billing St.");
         return repo.createOrder(newOrder) ? "Order was created" : "Order creation failed";
     }
 
     @Override
     public String getOrderById(int id) {
-        return id <= 0 ? "Invalid order ID." :
-                repo.getOrderById(id) != null ? repo.getOrderById(id).toString() : "Order not found";
+        if (id <= 0) {
+            return "Invalid order ID. It must be a positive number.";
+        }
+
+        Order order = repo.getOrderById(id);
+        return (order != null) ? order.toString() : "Order not found";
     }
 
     @Override
     public String getAllOrders() {
-        return repo.getAllOrders().stream()
+        List<Order> orders = repo.getAllOrders();
+        if (orders == null || orders.isEmpty()) {
+            return "No orders available.";
+        }
+
+        return orders.stream()
                 .map(Order::toString)
-                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
-                        result -> result.isEmpty() ? "No orders available." : result));
+                .collect(Collectors.joining("\n"));
     }
 
     @Override
     public String getUserOrders(int userId) {
-        return repo.getOrdersByUserId(userId).stream()
+        if (userId <= 0) {
+            return "Invalid user ID. It must be a positive number.";
+        }
+
+        List<Order> orders = repo.getOrdersByUserId(userId);
+        if (orders == null || orders.isEmpty()) {
+            return "No orders found for this user.";
+        }
+
+        return orders.stream()
                 .map(Order::toString)
-                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
-                        result -> result.isEmpty() ? "No orders found for this user." : result));
+                .collect(Collectors.joining("\n"));
     }
 
     @Override
     public String getOrderDetailsById(int orderId) {
-        return repo.getOrderDetailsById(orderId);
+        if (orderId <= 0) {
+            return "Invalid order ID. It must be a positive number.";
+        }
+
+        String orderDetails = repo.getOrderDetailsById(orderId);
+        return (orderDetails != null && !orderDetails.isEmpty()) ? orderDetails : "Order details not found.";
     }
 }
