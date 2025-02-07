@@ -16,26 +16,54 @@ public class OrderItemController implements IOrderItemController {
 
     @Override
     public String createOrderItem(int orderId, int productId, int quantity, double price) {
-        return repo.createOrderItem(new OrderItem(orderId, productId, quantity, price))
-                ? "OrderItem was created" : "OrderItem creation failed";
+        if (orderId <= 0) {
+            return "Invalid Order ID. It must be a positive number.";
+        }
+        if (productId <= 0) {
+            return "Invalid Product ID. It must be a positive number.";
+        }
+        if (quantity <= 0) {
+            return "Invalid quantity. It must be a positive number.";
+        }
+        if (price < 0) {
+            return "Invalid price. It cannot be negative.";
+        }
+
+        OrderItem orderItem = new OrderItem(orderId, productId, quantity, price);
+        return repo.createOrderItem(orderItem) ? "OrderItem was created" : "OrderItem creation failed";
     }
 
     @Override
     public String getOrderItemById(int id) {
-        return id <= 0 ? "Invalid OrderItem ID." :
-                repo.getOrderItemById(id) != null ? repo.getOrderItemById(id).toString() : "OrderItem not found";
+        if (id <= 0) {
+            return "Invalid OrderItem ID. It must be a positive number.";
+        }
+
+        OrderItem orderItem = repo.getOrderItemById(id);
+        return (orderItem != null) ? orderItem.toString() : "OrderItem not found";
     }
 
     @Override
     public String getAllOrderItems() {
-        return repo.getAllOrderItems().stream()
+        List<OrderItem> orderItems = repo.getAllOrderItems();
+        if (orderItems == null || orderItems.isEmpty()) {
+            return "No OrderItems available.";
+        }
+
+        return orderItems.stream()
                 .map(OrderItem::toString)
-                .collect(Collectors.collectingAndThen(Collectors.joining("\n"),
-                        result -> result.isEmpty() ? "No OrderItems available." : result));
+                .collect(Collectors.joining("\n"));
     }
 
     @Override
     public double calculateOrderItemTotalPrice(int quantity, double price) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("Quantity must be a positive number.");
+        }
+        if (price < 0) {
+            throw new IllegalArgumentException("Price cannot be negative.");
+        }
+
         return quantity * price;
     }
 }
