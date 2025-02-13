@@ -1,22 +1,17 @@
 package factories;
 
 import models.User;
+import factories.UserCreationRequest;
 
 public class UserFactory implements Factory<User> {
+
     @Override
-    public User create(Object... args) {
-        if (args.length < 7) {
-            throw new IllegalArgumentException("Invalid arguments for User creation");
+    public User create(Object request) {
+        if (request instanceof UserCreationRequest) {
+            UserCreationRequest req = (UserCreationRequest) request;
+            return new User(req.getId(), req.getName(), req.getSurname(), req.getGender(), req.getEmail());
+        } else {
+            throw new IllegalArgumentException("Invalid request type");
         }
-
-        Integer id = (Integer) args[0];
-        String name = (String) args[1];
-        String surname = (String) args[2];
-        Boolean gender = (Boolean) args[3];
-        String email = (String) args[4];
-        String password = (String) args[5];
-        Double balance = (Double) args[6];
-
-        return new User(id, name, surname, gender, email, password, balance);
     }
 }
