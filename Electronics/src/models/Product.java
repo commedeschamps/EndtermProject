@@ -17,6 +17,8 @@ public class Product {
         this.category = category;
     }
 
+
+
     public int getId() {
         return id;
     }
@@ -41,7 +43,6 @@ public class Product {
         return category;
     }
 
-    // Setter methods
     public void setId(int id) {
         this.id = id;
     }
