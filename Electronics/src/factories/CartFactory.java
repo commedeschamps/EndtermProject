@@ -3,8 +3,6 @@ package factories;
 import models.Cart;
 import data.interfaceces.IDB;
 
-import java.util.List;
-
 public class CartFactory implements Factory<Cart> {
     private IDB database;
 
@@ -13,13 +11,16 @@ public class CartFactory implements Factory<Cart> {
     }
 
     @Override
-    public Cart create(Object... args) {
-        if (args.length == 1 && args[0] instanceof Integer) {
-            return new Cart((int) args[0]);
-        } else if (args.length == 0) {
-            return new Cart();
-        } else {
-            throw new IllegalArgumentException("Invalid arguments for Cart creation");
+    public Cart create(Object request) {
+        if (request instanceof CartCreationRequest) {
+            CartCreationRequest req = (CartCreationRequest) request;
+            if (req.getCartId() != null) {
+                return new Cart(req.getCartId());
+            } else {
+                return new Cart();
+            }
         }
+        throw new IllegalArgumentException("Invalid request type");
     }
+
 }
