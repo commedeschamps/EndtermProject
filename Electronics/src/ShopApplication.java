@@ -18,7 +18,7 @@ public class ShopApplication {
         this.productController = productController;
         this.orderController = orderController;
         this.cartController = cartController;
-        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "4444");
+        this.connection = DriverManager.getConnection("jdbc:postgresql://localhost:5432/electronics_shop", "postgres", "1234");
     }
 
 
@@ -228,6 +228,13 @@ public class ShopApplication {
     private void createUser() {
         String name = getStringInput("Enter name: ");
         String email = getStringInput("Enter email: ");
+
+        // Validate email format d
+        while (!isValidEmail(email)) {
+            System.out.println("Invalid email format! Please enter a valid email.");
+            email = getStringInput("Enter email: ");
+        }
+
         String password = getStringInput("Enter password: ");
         double balance = getDoubleInput("Enter balance: ");
         String role = getStringInput("Enter role (admin/user): ");
@@ -248,6 +255,11 @@ public class ShopApplication {
         } catch (SQLException e) {
             System.out.println("Error creating user: " + e.getMessage());
         }
+    }
+
+    // Email validation method d
+    private boolean isValidEmail(String email) {
+        return email.contains("@") && email.contains(".") && email.indexOf("@") < email.lastIndexOf(".");
     }
 
     private int loggedInUserId = 0; // Глобальная переменная для хранения ID вошедшего пользователя
