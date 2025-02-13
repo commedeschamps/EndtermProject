@@ -1,18 +1,16 @@
 package factories;
 
 import models.Order;
-import java.util.List;
 
 public class OrderFactory implements Factory<Order> {
+
     @Override
-    public Order create(Object... args) {
-        if (args.length < 3) {
-            throw new IllegalArgumentException("Invalid arguments for Order creation");
+    public Order create(Object request) {
+        if (request instanceof OrderCreationRequest) {
+            OrderCreationRequest req = (OrderCreationRequest) request;
+            return new Order(req.getOrderId(), req.getUserId(), req.getProductIds());
+        } else {
+            throw new IllegalArgumentException("Invalid request type");
         }
-        return new Order(
-                (int) args[0],       
-                (int) args[1],       
-                (List<Integer>) args[2]
-        );
     }
 }
